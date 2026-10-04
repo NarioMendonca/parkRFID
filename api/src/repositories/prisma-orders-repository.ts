@@ -1,22 +1,20 @@
+import type { Order } from "@/entities/order.js";
 import { prisma } from "@/lib/prisma.js";
 
 export class PrismaOrdersRepository {
-	async createOrderForSession(data: {
-		sessionId: string;
-		items: { menuItemId: string; amount: number }[];
-	}) {
-		const createdOrder = await prisma.orders.create({
+	async createOrder(order: Order) {
+		await prisma.orders.create({
 			data: {
-				sessionId: data.sessionId,
+				id: order.id,
+				sessionId: order.sessionId,
+				createdAt: order.createdAt,
 				orderItems: {
 					createMany: {
-						data: data.items,
+						data: order.items,
 					},
 				},
 			},
 		});
-
-		return createdOrder;
 	}
 
 	async getSessionBalance(sessionId: string) {

@@ -1,6 +1,6 @@
 import type { Decimal } from "decimal.js";
+import { MenuItem } from "@/entities/menu-item.js";
 import { AlreadyExistsError } from "@/errors/AlreadyExistsError.js";
-import { DomainError } from "@/errors/DomainError.js";
 import { PrismaMenuItemsRepository } from "@/repositories/prisma-menu-items-repository.js";
 
 type CreateItemInput = {
@@ -20,19 +20,14 @@ export class CreateMenuItemUseCase {
 			throw new AlreadyExistsError("Item already exists");
 		}
 
-		if (price.lessThanOrEqualTo("0")) {
-			throw new DomainError("Price must be greather than 0");
-		}
+		const menuItem = MenuItem.create({
+			name,
+			category,
+			price,
+			isAvaliable,
+		});
 
-		const createdMenuItem = await this.prismaMenuItemsRepository.createMenuItem(
-			{
-				name,
-				category,
-				price,
-				isAvaliable,
-			},
-		);
-
-		return createdMenuItem;
+		await this.prismaMenuItemsRepository.createMenuItem(menuItem);
+		return menuItem;
 	}
 }

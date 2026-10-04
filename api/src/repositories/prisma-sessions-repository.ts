@@ -1,18 +1,17 @@
+import { Decimal } from "decimal.js";
+import { Session } from "@/entities/session.js";
+import { SessionGroup } from "@/entities/session-group.js";
 import { prisma } from "@/lib/prisma.js";
-import type { Prisma, Sessions } from "../../generated/prisma/client.js";
+import type { Sessions } from "../../generated/prisma/client.js";
+
+export function toSessionEntity(session: Sessions) {
+	return Session.restore({
+		...session,
+		total: new Decimal(session.total.toString()),
+	});
+}
 
 export class PrismaSessionsRepository {
-	async findActiveSessionByBraceletId(braceletId: string) {
-		const session = await prisma.sessions.findFirst({
-			where: {
-				braceletId,
-				status: "OPEN",
-			},
-		});
-
-		return session;
-	}
-
 	async findSessionByBraceletId(braceletId: string) {
 		const session = await prisma.sessions.findFirst({
 			where: {
@@ -30,47 +29,44 @@ export class PrismaSessionsRepository {
 			},
 		});
 
-		return sessionGroup;
+		return sessionGroup ? SessionGroup.restore(sessionGroup) : null;
 	}
 
-	async createSessionGroup({
-		responsibleCpf,
-		responsiblePhoneNumber,
-	}: Prisma.SessionsGroupCreateInput) {
-		const sessionGroup = await prisma.sessionsGroup.create({
+	async createSessionGroup(sessionGroup: SessionGroup) {
+		await prisma.sessionsGroup.create({
 			data: {
-				responsibleCpf,
-				responsiblePhoneNumber,
+				id: sessionGroup.id,
+				responsibleCpf: sessionGroup.responsibleCpf,
+				responsiblePhoneNumber: sessionGroup.responsiblePhoneNumber,
 			},
 		});
-
-		return sessionGroup;
 	}
 
-	async createSession({
-		braceletId,
-		checkinDate,
-		sessionsGroupId,
-		total,
-		sessionType,
-	}: Prisma.SessionsUncheckedCreateInput) {
-		const session = await prisma.sessions.create({
+	async createSession(session: Session) {
+		await prisma.sessions.create({
 			data: {
-				braceletId,
-				checkinDate,
-				total,
-				sessionType,
-				sessionsGroupId,
+				id: session.id,
+				braceletId: session.braceletId,
+				checkinDate: session.checkinDate,
+				checkoutDate: session.checkoutDate,
+				status: session.status,
+				total: session.total,
+				sessionType: session.sessionType,
+				sessionsGroupId: session.sessionsGroupId,
 			},
 		});
-
-		return session;
 	}
 
-	async closeSession(braceletId: string) {
-		const session =
-			await prisma.$queryRaw<Sessions>`UPDATE Session SET checkoutDate = DATETIME('now'), STATUS = 'CLOSE' WHERE braceletId = ${braceletId} AND status = 'OPEN' RETURNING *`;
-
-		return session;
+	async saveSession(session: Session) {
+		await prisma.sessions.update({
+			where: {
+				id: session.id,
+			},
+			data: {
+				checkoutDate: session.checkoutDate,
+				status: session.status,
+				total: session.total,
+			},
+		});
 	}
 }

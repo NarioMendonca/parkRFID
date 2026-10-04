@@ -1,3 +1,4 @@
+import { Bracelet } from "@/entities/bracelet.js";
 import { AlreadyExistsError } from "@/errors/AlreadyExistsError.js";
 import { PrismaBraceletsRepository } from "@/repositories/prisma-bracelets-repository.js";
 
@@ -16,6 +17,6 @@ export class RegisterBraceletUseCase {
 			throw new AlreadyExistsError("Bracelet already exists");
 		}
 
-		await this.braceletsRepository.register(uid_rfid);
+		await this.braceletsRepository.register(Bracelet.register(uid_rfid));
 	}
 }

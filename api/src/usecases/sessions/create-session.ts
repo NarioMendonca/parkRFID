@@ -1,6 +1,5 @@
-import { Decimal } from "decimal.js";
-import { AlreadyExistsError } from "@/errors/AlreadyExistsError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
+import { PrismaBraceletsRepository } from "@/repositories/prisma-bracelets-repository.js";
 import { PrismaSessionsRepository } from "@/repositories/prisma-sessions-repository.js";
 
 type CreateSessionInput = {
@@ -11,20 +10,17 @@ type CreateSessionInput = {
 
 export class CreateSessionUseCase {
 	private prismaSessionsRepository = new PrismaSessionsRepository();
+	private prismaBraceletsRepository = new PrismaBraceletsRepository();
 
 	async handle({
 		braceletId,
 		sessionGroupId,
 		sessionType,
 	}: CreateSessionInput) {
-		const searchedSession =
-			await this.prismaSessionsRepository.findActiveSessionByBraceletId(
-				braceletId,
-			);
-		if (searchedSession) {
-			throw new AlreadyExistsError(
-				"Session active already exists in this bracelet",
-			);
+		const bracelet =
+			await this.prismaBraceletsRepository.findByUidRfid(braceletId);
+		if (!bracelet) {
+			throw new NotFoundError("Bracelet not registered");
 		}
 
 		const searchedGroup =
@@ -35,15 +31,9 @@ export class CreateSessionUseCase {
 			);
 		}
 
-		const session = await this.prismaSessionsRepository.createSession({
-			braceletId,
-			checkoutDate: null,
-			checkinDate: new Date(),
-			total: new Decimal("0"),
-			sessionType: sessionType ?? "NORMAL",
-			status: "OPEN",
-			sessionsGroupId: sessionGroupId,
-		});
+		const session = bracelet.checkin(searchedGroup, sessionType ?? "NORMAL");
+
+		await this.prismaSessionsRepository.createSession(session);
 		return session;
 	}
 }

@@ -2,7 +2,10 @@ import type { MenuItemDTO } from "../dtos/menu-item-dto.js";
 
 export function menuItemToResponse(menuItemDto: MenuItemDTO) {
 	return {
-		...menuItemDto,
+		id: menuItemDto.id,
+		name: menuItemDto.name,
+		category: menuItemDto.category,
 		price: menuItemDto.price.toString(),
+		isAvaliable: menuItemDto.isAvaliable,
 	};
 }

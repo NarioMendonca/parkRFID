@@ -1,7 +1,7 @@
 import { NotFoundError } from "@/errors/NotFoundError.js";
+import { PrismaBraceletsRepository } from "@/repositories/prisma-bracelets-repository.js";
 import { PrismaMenuItemsRepository } from "@/repositories/prisma-menu-items-repository.js";
 import { PrismaOrdersRepository } from "@/repositories/prisma-orders-repository.js";
-import { PrismaSessionsRepository } from "@/repositories/prisma-sessions-repository.js";
 
 type CreateOrderInput = {
 	braceletId: string;
@@ -12,32 +12,24 @@ type CreateOrderInput = {
 };
 
 export class CreateOrderUseCase {
-	private prismaSessionsRepository = new PrismaSessionsRepository();
+	private prismaBraceletsRepository = new PrismaBraceletsRepository();
 	private prismaOrdersRepository = new PrismaOrdersRepository();
 	private prismaMenuItemsRepository = new PrismaMenuItemsRepository();
 
 	async handle({ braceletId, items }: CreateOrderInput) {
-		const session =
-			await this.prismaSessionsRepository.findActiveSessionByBraceletId(
-				braceletId,
-			);
-		if (!session) {
-			throw new NotFoundError("Session not found");
+		const bracelet =
+			await this.prismaBraceletsRepository.findByUidRfid(braceletId);
+		if (!bracelet) {
+			throw new NotFoundError("Bracelet not registered");
 		}
 
 		const itemsIds = items.map((item) => item.menuItemId);
-		const fetchedItems =
+		const menuItems =
 			await this.prismaMenuItemsRepository.fetchItemsById(itemsIds);
-		if (fetchedItems.length !== items.length) {
-			throw new NotFoundError("Some Menu Item has invalid id");
-		}
 
-		const createdOrder =
-			await this.prismaOrdersRepository.createOrderForSession({
-				sessionId: session.id,
-				items,
-			});
+		const order = bracelet.placeOrder(items, menuItems);
 
-		return createdOrder;
+		await this.prismaOrdersRepository.createOrder(order);
+		return order;
 	}
 }

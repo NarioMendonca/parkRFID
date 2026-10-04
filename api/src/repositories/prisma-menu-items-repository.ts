@@ -1,5 +1,14 @@
+import { Decimal } from "decimal.js";
+import { MenuItem } from "@/entities/menu-item.js";
 import { prisma } from "@/lib/prisma.js";
-import type { Prisma } from "../../generated/prisma/client.js";
+import type { MenuItems } from "../../generated/prisma/client.js";
+
+function toMenuItemEntity(menuItem: MenuItems) {
+	return MenuItem.restore({
+		...menuItem,
+		price: new Decimal(menuItem.price.toString()),
+	});
+}
 
 export class PrismaMenuItemsRepository {
 	async findItemByName(name: string) {
@@ -9,15 +18,19 @@ export class PrismaMenuItemsRepository {
 			},
 		});
 
-		return menuItem;
+		return menuItem ? toMenuItemEntity(menuItem) : null;
 	}
 
-	async createMenuItem(data: Prisma.MenuItemsCreateInput) {
-		const menuItem = await prisma.menuItems.create({
-			data,
+	async createMenuItem(menuItem: MenuItem) {
+		await prisma.menuItems.create({
+			data: {
+				id: menuItem.id,
+				name: menuItem.name,
+				category: menuItem.category,
+				price: menuItem.price,
+				isAvaliable: menuItem.isAvaliable,
+			},
 		});
-
-		return menuItem;
 	}
 
 	async fetchItems(category?: string) {
@@ -39,7 +52,7 @@ export class PrismaMenuItemsRepository {
 			},
 		});
 
-		return items;
+		return items.map(toMenuItemEntity);
 	}
 
 	async findItemById(id: string) {
@@ -49,20 +62,21 @@ export class PrismaMenuItemsRepository {
 			},
 		});
 
-		return menuItem;
+		return menuItem ? toMenuItemEntity(menuItem) : null;
 	}
 
-	async updateMenuItem(
-		data: Prisma.MenuItemsUpdateWithoutOrderItemsInput & { id: string },
-	) {
-		const menuItem = await prisma.menuItems.update({
+	async updateMenuItem(menuItem: MenuItem) {
+		await prisma.menuItems.update({
 			where: {
-				id: data.id,
+				id: menuItem.id,
 			},
-			data,
+			data: {
+				name: menuItem.name,
+				category: menuItem.category,
+				price: menuItem.price,
+				isAvaliable: menuItem.isAvaliable,
+			},
 		});
-
-		return menuItem;
 	}
 
 	async deleteItem(id: string) {

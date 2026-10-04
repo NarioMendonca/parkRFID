@@ -1,4 +1,5 @@
 import { NotFoundError } from "@/errors/NotFoundError.js";
+import { PrismaBraceletsRepository } from "@/repositories/prisma-bracelets-repository.js";
 import { PrismaSessionsRepository } from "@/repositories/prisma-sessions-repository.js";
 
 type FinishSessionInput = {
@@ -7,18 +8,18 @@ type FinishSessionInput = {
 
 export class CloseSessionUseCase {
 	private prismaSessionsRepository = new PrismaSessionsRepository();
+	private prismaBraceletsRepository = new PrismaBraceletsRepository();
 
 	async handle({ braceletId }: FinishSessionInput) {
-		const sessionToFinish =
-			await this.prismaSessionsRepository.findActiveSessionByBraceletId(
-				braceletId,
-			);
-		if (!sessionToFinish) {
-			throw new NotFoundError("Session to finish not found");
+		const bracelet =
+			await this.prismaBraceletsRepository.findByUidRfid(braceletId);
+		if (!bracelet) {
+			throw new NotFoundError("Bracelet not registered");
 		}
 
-		const session =
-			await this.prismaSessionsRepository.closeSession(braceletId);
+		const session = bracelet.closeSession();
+
+		await this.prismaSessionsRepository.saveSession(session);
 		return session;
 	}
 }
