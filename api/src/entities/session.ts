@@ -77,6 +77,10 @@ export class Session {
 		return this.props.sessionsGroupId;
 	}
 
+	addValueToBalance(value: Decimal) {
+		this.props.total = this.props.total.add(value);
+	}
+
 	hasPendingBalance() {
 		return !this.props.total.equals("0");
 	}

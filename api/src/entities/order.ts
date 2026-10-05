@@ -1,7 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { NotFoundError } from "@/errors/NotFoundError.js";
-import type { MenuItem } from "./menu-item.js";
+import { MenuItem } from "./menu-item.js";
 import type { Session } from "./session.js";
+import { Decimal } from "decimal.js";
 
 export type OrderItem = {
 	menuItemId: string;
@@ -13,6 +14,7 @@ type OrderProps = {
 	sessionId: string;
 	createdAt: Date;
 	items: OrderItem[];
+	balance: Decimal
 };
 
 type PlaceOrderInput = {
@@ -25,16 +27,25 @@ export class Order {
 	private constructor(private props: OrderProps) {}
 
 	static place({ session, items, menuItems }: PlaceOrderInput) {
-		const menuItemsIds = new Set(menuItems.map((menuItem) => menuItem.id));
-		if (!items.every((item) => menuItemsIds.has(item.menuItemId))) {
-			throw new NotFoundError("Some Menu Item has invalid id");
-		}
+		const pricesById = new Map(
+			menuItems.map((menuItem) => [menuItem.id, menuItem.price]),
+		);
+
+		const orderTotalBalance = items.reduce((balance, item) => {
+			const price = pricesById.get(item.menuItemId);
+			if (!price) {
+				throw new NotFoundError("Some Menu Item has invalid id");
+			}
+
+			return balance.add(price.mul(item.amount));
+		}, new Decimal("0"));
 
 		return new Order({
 			id: randomUUID(),
 			sessionId: session.id,
 			createdAt: new Date(),
 			items,
+			balance: orderTotalBalance
 		});
 	}
 
@@ -52,5 +63,9 @@ export class Order {
 
 	get items() {
 		return this.props.items;
+	}
+
+	get balance(): Decimal {
+		return this.props.balance;
 	}
 }

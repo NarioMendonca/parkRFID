@@ -70,11 +70,16 @@ export class Bracelet {
 			throw new NotFoundError("Session not found");
 		}
 
-		return Order.place({
+		
+		const order = Order.place({
 			session: this.props.activeSession,
 			items,
 			menuItems,
-		});
+		})
+		
+		this.props.activeSession.addValueToBalance(order.balance)
+
+		return order
 	}
 
 	authorizeExit(): ExitAuthorization {
