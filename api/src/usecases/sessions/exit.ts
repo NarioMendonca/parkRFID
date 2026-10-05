@@ -17,6 +17,10 @@ export class ExitUseCase {
 			throw new NotFoundError("Bracelet not registered");
 		}
 
+		if (!bracelet.activeSession) {
+			throw new NotFoundError("No active session was found in bracelet")
+		}
+
 		const closedSession = bracelet.exit();
 		if (closedSession) {
 			await this.prismaSessionsRepository.saveSession(closedSession);
