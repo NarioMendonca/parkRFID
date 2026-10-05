@@ -50,7 +50,8 @@ model Sessions {
 
   sessionGroup SessionsGroup @relation(fields: [sessionsGroupId], references: [id])
 
-  orders Orders[]
+  orders   Orders[]
+  payments Payments[]
 
   @@unique([braceletId], where: { status: "OPEN" })
 }
@@ -75,11 +76,21 @@ model Orders {
 }
 
 model OrderItems {
-  id         String @id @default(uuid())
+  id         String  @id @default(uuid())
   amount     Int
+  unitPrice  Decimal
   menuItemId String
   ordersId   String
 
   menuItems MenuItems @relation(fields: [menuItemId], references: [id])
   orders    Orders    @relation(fields: [ordersId], references: [id])
+}
+
+model Payments {
+  id        String   @id @default(uuid())
+  amount    Decimal
+  createdAt DateTime @default(now())
+  sessionId String
+
+  session Sessions @relation(fields: [sessionId], references: [id])
 }

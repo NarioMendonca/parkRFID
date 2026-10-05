@@ -74,3 +74,50 @@ describe("DELETE /bracelets/:uid_rfid", () => {
 		expect(response.statusCode).toBe(409);
 	});
 });
+
+describe("GET /bracelets/:uid_rfid/sessions", () => {
+	it("lista todas as sessões da pulseira, da mais recente para a mais antiga", async () => {
+		await checkin(app);
+		await app.inject({ method: "POST", url: `/sessions/${BRACELET_UID}/exit` });
+		await app.inject({
+			method: "POST",
+			url: "/sessions/checkin",
+			payload: {
+				braceletId: BRACELET_UID,
+				sessionGroupId: await createSessionGroup(app),
+			},
+		});
+
+		const response = await app.inject({
+			method: "GET",
+			url: `/bracelets/${BRACELET_UID}/sessions`,
+		});
+
+		expect(response.statusCode).toBe(200);
+		expect(response.json().sessions).toMatchObject([
+			{ braceletId: BRACELET_UID, status: "OPEN", checkoutDate: null },
+			{ braceletId: BRACELET_UID, status: "CLOSED" },
+		]);
+	});
+
+	it("retorna uma lista vazia para pulseira que nunca teve sessão", async () => {
+		await registerBracelet(app);
+
+		const response = await app.inject({
+			method: "GET",
+			url: `/bracelets/${BRACELET_UID}/sessions`,
+		});
+
+		expect(response.statusCode).toBe(200);
+		expect(response.json()).toEqual({ sessions: [] });
+	});
+
+	it("retorna 404 para pulseira não cadastrada", async () => {
+		const response = await app.inject({
+			method: "GET",
+			url: `/bracelets/${BRACELET_UID}/sessions`,
+		});
+
+		expect(response.statusCode).toBe(404);
+	});
+});

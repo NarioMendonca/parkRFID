@@ -17,9 +17,9 @@ export class PaySessionUseCase {
 			throw new NotFoundError("Bracelet not registered");
 		}
 
-		const { session, paidAmount } = bracelet.pay();
+		const { session, payment } = bracelet.pay();
 
-		await this.prismaSessionsRepository.saveSession(session);
-		return { paidAmount };
+		await this.prismaSessionsRepository.savePayment(session, payment);
+		return { paidAmount: payment.amount };
 	}
 }

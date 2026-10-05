@@ -9,11 +9,16 @@ export type OrderItem = {
 	amount: number;
 };
 
+// The unit price is kept so the order value doesn't change with the menu
+export type OrderLine = OrderItem & {
+	unitPrice: Decimal;
+};
+
 type OrderProps = {
 	id: string;
 	sessionId: string;
 	createdAt: Date;
-	items: OrderItem[];
+	items: OrderLine[];
 	balance: Decimal;
 };
 
@@ -31,20 +36,25 @@ export class Order {
 			menuItems.map((menuItem) => [menuItem.id, menuItem.price]),
 		);
 
-		const orderTotalBalance = items.reduce((balance, item) => {
-			const price = pricesById.get(item.menuItemId);
-			if (!price) {
+		const lines = items.map((item) => {
+			const unitPrice = pricesById.get(item.menuItemId);
+			if (!unitPrice) {
 				throw new NotFoundError("Some Menu Item has invalid id");
 			}
 
-			return balance.add(price.mul(item.amount));
-		}, new Decimal("0"));
+			return { ...item, unitPrice };
+		});
+
+		const orderTotalBalance = lines.reduce(
+			(balance, line) => balance.add(line.unitPrice.mul(line.amount)),
+			new Decimal("0"),
+		);
 
 		return new Order({
 			id: randomUUID(),
 			sessionId: session.id,
 			createdAt: new Date(),
-			items,
+			items: lines,
 			balance: orderTotalBalance,
 		});
 	}

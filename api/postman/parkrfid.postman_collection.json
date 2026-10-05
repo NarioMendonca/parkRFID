@@ -1,0 +1,624 @@
+{
+	"info": {
+		"name": "ParkRFID API",
+		"description": "Coleção para testar manualmente todas as rotas.\n\nAs pastas seguem o fluxo do parque, de cima para baixo, e dá para rodar tudo com Run collection: cadastrar pulseira, criar item e grupo, check-in, pedido, pagar, saída, consultas e, por último, as remoções.\n\nOs ids retornados são guardados em variáveis da coleção ({{sessionGroupId}}, {{menuItemId}}, {{sessionId}}). Mude {{braceletUid}} para testar com outra pulseira.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Preparação",
+			"item": [
+				{
+					"name": "Cadastrar pulseira",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/bracelets",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bracelets"
+							]
+						},
+						"description": "Cadastra a pulseira. Sem isso nenhuma outra ação com ela funciona.\n\nRespostas: 201 cadastrada, 409 já cadastrada.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"uid_rfid\": \"{{braceletUid}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 201\", () => pm.response.to.have.status(201));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Criar item do cardápio",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/menu",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"menu"
+							]
+						},
+						"description": "Cria um item e guarda o id em {{menuItemId}}. O preço é uma string.\n\nRespostas: 200, 400 preço <= 0, 409 nome já existe.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Pipoca\",\n  \"category\": \"snack\",\n  \"price\": \"10.50\",\n  \"isAvaliable\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"const body = pm.response.json();",
+									"pm.collectionVariables.set(\"menuItemId\", body.menuItem.id);"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Criar grupo (responsável)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/sessions/checkin/group",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sessions",
+								"checkin",
+								"group"
+							]
+						},
+						"description": "Cria o grupo e guarda o id em {{sessionGroupId}}. O CPF precisa ter 11 caracteres.\n\nRespostas: 200, 400 CPF inválido.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"responsibleCpf\": \"12345678901\",\n  \"responsiblePhoneNumber\": \"11999999999\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"const body = pm.response.json();",
+									"pm.collectionVariables.set(\"sessionGroupId\", body.sessionGroup.id);"
+								]
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "2. Uso do parque",
+			"item": [
+				{
+					"name": "Check-in (abrir sessão)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/sessions/checkin",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sessions",
+								"checkin"
+							]
+						},
+						"description": "Abre a sessão da pulseira e guarda o id em {{sessionId}}. sessionType: NORMAL ou KID.\n\nRespostas: 200, 404 pulseira ou grupo não existe, 409 pulseira já tem sessão ativa.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"braceletId\": \"{{braceletUid}}\",\n  \"sessionGroupId\": \"{{sessionGroupId}}\",\n  \"sessionType\": \"NORMAL\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"const body = pm.response.json();",
+									"pm.collectionVariables.set(\"sessionId\", body.session.id);"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Criar pedido",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/orders",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"orders"
+							]
+						},
+						"description": "Cria o pedido e soma o valor no saldo da sessão.\n\nRespostas: 200, 404 pulseira não cadastrada, sem sessão ativa ou item inexistente.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"braceletId\": \"{{braceletUid}}\",\n  \"items\": [\n    {\n      \"menuItemId\": \"{{menuItemId}}\",\n      \"amount\": 2\n    }\n  ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Pagar sessão",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/sessions/{{braceletUid}}/pay",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sessions",
+								"{{braceletUid}}",
+								"pay"
+							]
+						},
+						"description": "Paga todo o saldo pendente. A sessão continua aberta.\n\nRespostas: 200 com paidAmount, 404 pulseira não cadastrada ou sem sessão, 409 sem saldo pendente."
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Saída (exit)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/sessions/{{braceletUid}}/exit",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sessions",
+								"{{braceletUid}}",
+								"exit"
+							]
+						},
+						"description": "Libera a saída e encerra a sessão.\n\nRespostas: 200, 404 pulseira não cadastrada, 409 saldo pendente (pague antes)."
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+								]
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "3. Consultas",
+			"item": [
+				{
+					"name": "Histórico da sessão",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/sessions/{{sessionId}}/history",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sessions",
+								"{{sessionId}}",
+								"history"
+							]
+						},
+						"description": "Linha do tempo da sessão: CHECKIN, ORDER, PAYMENT e CHECKOUT, cada um com data.\n\nRespostas: 200, 404 sessão não existe."
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Listar sessões da pulseira",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/bracelets/{{braceletUid}}/sessions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bracelets",
+								"{{braceletUid}}",
+								"sessions"
+							]
+						},
+						"description": "Todas as sessões que a pulseira já teve, da mais recente para a mais antiga. Guarda o id da mais recente em {{sessionId}}.\n\nRespostas: 200, 404 pulseira não cadastrada."
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+									"const sessions = pm.response.json().sessions;",
+									"if (sessions.length) pm.collectionVariables.set(\"sessionId\", sessions[0].id);"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Listar itens do cardápio",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/menu",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"menu"
+							],
+							"query": [
+								{
+									"key": "category",
+									"value": "snack",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Lista os itens. Ative o parâmetro category para filtrar."
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Sessões ativas e criadas hoje",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/reports/sessions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reports",
+								"sessions"
+							]
+						},
+						"description": "Retorna activeSessions e sessionsCreatedToday."
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Consumo de hoje",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/reports/consumption/today",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reports",
+								"consumption",
+								"today"
+							]
+						},
+						"description": "Retorna a data e o total consumido hoje (soma dos pedidos do dia)."
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+								]
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "4. Manutenção",
+			"item": [
+				{
+					"name": "Atualizar item do cardápio",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/menu/{{menuItemId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"menu",
+								"{{menuItemId}}"
+							]
+						},
+						"description": "O id vai na URL e também no body (a API exige os dois).\n\nRespostas: 200, 400 preço <= 0, 404 item não existe.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": \"{{menuItemId}}\",\n  \"name\": \"Pipoca Grande\",\n  \"category\": \"snack\",\n  \"price\": \"12.00\",\n  \"isAvaliable\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Remover item do cardápio",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/menu/{{menuItemId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"menu",
+								"{{menuItemId}}"
+							]
+						},
+						"description": "Respostas: 200, 404 item não existe.\n\nAtenção: se o item já foi usado em algum pedido, a API responde 500 (o banco impede apagar item com pedidos). Isso é um bug conhecido da API, não da coleção."
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Remover pulseira",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/bracelets/{{braceletUid}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bracelets",
+								"{{braceletUid}}"
+							]
+						},
+						"description": "Remove a pulseira.\n\nRespostas: 204 removida, 404 não cadastrada, 409 tem sessão ativa (faça o exit antes)."
+					}
+				}
+			]
+		},
+		{
+			"name": "5. Outros",
+			"item": [
+				{
+					"name": "Health check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": []
+						},
+						"description": "Retorna \"Server running!\"."
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Documentação (Scalar)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/docs",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"docs"
+							]
+						},
+						"description": "Abre a documentação interativa no navegador."
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3333"
+		},
+		{
+			"key": "braceletUid",
+			"value": "04A1B2C3D4E5F6"
+		},
+		{
+			"key": "sessionGroupId",
+			"value": ""
+		},
+		{
+			"key": "menuItemId",
+			"value": ""
+		},
+		{
+			"key": "sessionId",
+			"value": ""
+		}
+	]
+}

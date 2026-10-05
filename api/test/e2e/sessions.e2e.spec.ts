@@ -301,3 +301,110 @@ describe("POST /sessions/:braceletId/exit", () => {
 		expect(response.statusCode).toBe(404);
 	});
 });
+
+describe("GET /sessions/:sessionId/history", () => {
+	async function getActiveSessionId() {
+		const response = await app.inject({
+			method: "GET",
+			url: `/bracelets/${BRACELET_UID}/sessions`,
+		});
+		return response.json().sessions[0].id as string;
+	}
+
+	it("mostra entrada, pedidos, pagamentos e saída em ordem, com datas", async () => {
+		await checkin(app);
+		const sessionId = await getActiveSessionId();
+		const menuItem = await createMenuItem(app, {
+			name: "Pipoca",
+			price: "10.50",
+		});
+		await placeOrder(app, BRACELET_UID, [
+			{ menuItemId: menuItem.id, amount: 2 },
+		]);
+		await app.inject({ method: "POST", url: `/sessions/${BRACELET_UID}/pay` });
+		await app.inject({ method: "POST", url: `/sessions/${BRACELET_UID}/exit` });
+
+		const response = await app.inject({
+			method: "GET",
+			url: `/sessions/${sessionId}/history`,
+		});
+
+		expect(response.statusCode).toBe(200);
+		const { session, events } = response.json();
+		expect(session).toMatchObject({ id: sessionId, status: "CLOSED" });
+		expect(events).toEqual([
+			{ type: "CHECKIN", date: expect.any(String) },
+			{
+				type: "ORDER",
+				date: expect.any(String),
+				orderId: expect.any(String),
+				total: "21.00",
+				items: [
+					{
+						menuItemId: menuItem.id,
+						name: "Pipoca",
+						amount: 2,
+						unitPrice: "10.50",
+						subtotal: "21.00",
+					},
+				],
+			},
+			{
+				type: "PAYMENT",
+				date: expect.any(String),
+				paymentId: expect.any(String),
+				amount: "21.00",
+			},
+			{ type: "CHECKOUT", date: expect.any(String) },
+		]);
+	});
+
+	it("mantém o preço da época do pedido mesmo se o cardápio mudar", async () => {
+		await checkin(app);
+		const sessionId = await getActiveSessionId();
+		const menuItem = await createMenuItem(app, { price: "10.50" });
+		await placeOrder(app, BRACELET_UID, [
+			{ menuItemId: menuItem.id, amount: 1 },
+		]);
+		await app.inject({
+			method: "PATCH",
+			url: `/menu/${menuItem.id}`,
+			payload: { ...menuItem, price: "20" },
+		});
+
+		const response = await app.inject({
+			method: "GET",
+			url: `/sessions/${sessionId}/history`,
+		});
+
+		expect(response.json().events[1]).toMatchObject({
+			type: "ORDER",
+			total: "10.50",
+			items: [{ unitPrice: "10.50" }],
+		});
+	});
+
+	it("não mostra saída enquanto a sessão está aberta", async () => {
+		await checkin(app);
+		const sessionId = await getActiveSessionId();
+
+		const response = await app.inject({
+			method: "GET",
+			url: `/sessions/${sessionId}/history`,
+		});
+
+		expect(response.statusCode).toBe(200);
+		expect(response.json().events).toEqual([
+			{ type: "CHECKIN", date: expect.any(String) },
+		]);
+	});
+
+	it("retorna 404 para sessão inexistente", async () => {
+		const response = await app.inject({
+			method: "GET",
+			url: "/sessions/sessao-inexistente/history",
+		});
+
+		expect(response.statusCode).toBe(404);
+	});
+});

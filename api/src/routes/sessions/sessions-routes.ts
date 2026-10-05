@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { createSessionRoute } from "./create-session.route.js";
 import { createSessionGroupRoute } from "./create-session-group.route.js";
 import { exitRoute } from "./exit.route.js";
+import { getSessionHistoryRoute } from "./get-session-history.route.js";
 import { paySessionRoute } from "./pay-session.route.js";
 
 export async function sessionsRoutes(app: FastifyInstance) {
@@ -9,4 +10,5 @@ export async function sessionsRoutes(app: FastifyInstance) {
 	app.register(createSessionGroupRoute);
 	app.register(exitRoute);
 	app.register(paySessionRoute);
+	app.register(getSessionHistoryRoute);
 }

@@ -4,6 +4,7 @@ import { DomainError } from "@/errors/DomainError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { MenuItem } from "./menu-item.js";
 import { Order, type OrderItem } from "./order.js";
+import { Payment } from "./payment.js";
 import { Session, type SessionType } from "./session.js";
 import type { SessionGroup } from "./session-group.js";
 
@@ -85,8 +86,8 @@ export class Bracelet {
 			throw new NotFoundError("Session to pay not found");
 		}
 
-		const paidAmount = session.pay();
-		return { session, paidAmount };
+		const payment = Payment.register({ session, amount: session.pay() });
+		return { session, payment };
 	}
 
 	// Leaving the park closes the active session, so it must be paid first.

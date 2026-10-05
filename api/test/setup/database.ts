@@ -14,6 +14,7 @@ const { prisma } = await import("@/lib/prisma.js");
 beforeEach(async () => {
 	await prisma.orderItems.deleteMany();
 	await prisma.orders.deleteMany();
+	await prisma.payments.deleteMany();
 	await prisma.sessions.deleteMany();
 	await prisma.sessionsGroup.deleteMany();
 	await prisma.menuItems.deleteMany();

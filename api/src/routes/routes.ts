@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { braceletsRoutes } from "./bracelets/bracelets-routes.js";
 import { menuItemsRoutes } from "./menu-items/menu-items-routes.js";
 import { ordersRoutes } from "./orders/orders-routes.js";
+import { reportsRoutes } from "./reports/reports-routes.js";
 import { sessionsRoutes } from "./sessions/sessions-routes.js";
 
 export async function routes(app: FastifyInstance) {
@@ -17,5 +18,8 @@ export async function routes(app: FastifyInstance) {
 	});
 	app.register(braceletsRoutes, {
 		prefix: "/bracelets",
+	});
+	app.register(reportsRoutes, {
+		prefix: "/reports",
 	});
 }

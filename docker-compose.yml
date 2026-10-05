@@ -6,6 +6,7 @@ services:
     environment:
       DATABASE_URL: file:./data/database.db
       CLIENTS_URL: http://localhost:5050
+      TZ: America/Sao_Paulo
     volumes:
       - api-data:/api/data
 

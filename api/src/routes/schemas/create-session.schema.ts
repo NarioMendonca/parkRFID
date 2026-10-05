@@ -1,4 +1,5 @@
 import z from "zod";
+import { SessionSchema } from "./session.schema.js";
 
 export const createSessionSchema = {
 	body: z.object({
@@ -8,16 +9,7 @@ export const createSessionSchema = {
 	}),
 	response: {
 		200: z.object({
-			session: z.object({
-				id: z.string(),
-				braceletId: z.string(),
-				sessionType: z.enum(["NORMAL", "KID"]),
-				checkoutDate: z.date().nullable(),
-				checkinDate: z.date(),
-				status: z.enum(["OPEN", "CLOSED"]),
-				total: z.string(),
-				sessionsGroupId: z.string(),
-			}),
+			session: SessionSchema,
 			message: z.string(),
 		}),
 	},

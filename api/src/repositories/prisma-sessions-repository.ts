@@ -1,4 +1,5 @@
 import { Decimal } from "decimal.js";
+import type { Payment } from "@/entities/payment.js";
 import { Session } from "@/entities/session.js";
 import { SessionGroup } from "@/entities/session-group.js";
 import { prisma } from "@/lib/prisma.js";
@@ -68,5 +69,28 @@ export class PrismaSessionsRepository {
 				total: session.total,
 			},
 		});
+	}
+
+	// The session balance and its payment are saved together, so a payment is
+	// never recorded without the balance being settled (or the other way around)
+	async savePayment(session: Session, payment: Payment) {
+		await prisma.$transaction([
+			prisma.sessions.update({
+				where: {
+					id: session.id,
+				},
+				data: {
+					total: session.total,
+				},
+			}),
+			prisma.payments.create({
+				data: {
+					id: payment.id,
+					sessionId: payment.sessionId,
+					amount: payment.amount,
+					createdAt: payment.createdAt,
+				},
+			}),
+		]);
 	}
 }
