@@ -18,7 +18,7 @@ export class RemoveBraceletUseCase {
 		}
 
 		if (braceletExists.activeSession) {
-			throw new DomainError("Bracelet to remove is active", 409)
+			throw new DomainError("Bracelet to remove is active", 409);
 		}
 
 		await this.braceletsRepository.remove(uid_rfid);

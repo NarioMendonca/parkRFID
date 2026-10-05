@@ -14,7 +14,7 @@ type OrderProps = {
 	sessionId: string;
 	createdAt: Date;
 	items: OrderItem[];
-	balance: Decimal
+	balance: Decimal;
 };
 
 type PlaceOrderInput = {
@@ -45,7 +45,7 @@ export class Order {
 			sessionId: session.id,
 			createdAt: new Date(),
 			items,
-			balance: orderTotalBalance
+			balance: orderTotalBalance,
 		});
 	}
 

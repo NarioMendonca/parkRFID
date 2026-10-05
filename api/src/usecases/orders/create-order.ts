@@ -20,24 +20,22 @@ export class CreateOrderUseCase {
 	private sessionsRepository = new PrismaSessionsRepository();
 
 	async handle({ braceletId, items }: CreateOrderInput) {
-		const bracelet =
-			await this.braceletsRepository.findByUidRfid(braceletId);
+		const bracelet = await this.braceletsRepository.findByUidRfid(braceletId);
 		if (!bracelet) {
 			throw new NotFoundError("Bracelet not registered");
 		}
 
 		if (!bracelet.activeSession) {
-			throw new NotFoundError("Session not found in this bracelet")
+			throw new NotFoundError("Session not found in this bracelet");
 		}
 
 		const itemsIds = items.map((item) => item.menuItemId);
-		const menuItems =
-			await this.menuItemsRepository.fetchItemsById(itemsIds);
+		const menuItems = await this.menuItemsRepository.fetchItemsById(itemsIds);
 
 		const order = bracelet.placeOrder(items, menuItems);
 
 		await this.ordersRepository.createOrder(order);
-		await this.sessionsRepository.saveSession(bracelet.activeSession)
+		await this.sessionsRepository.saveSession(bracelet.activeSession);
 
 		return order;
 	}
