@@ -85,6 +85,17 @@ export class Session {
 		return !this.props.total.equals("0");
 	}
 
+	// Settles the whole pending balance and returns the amount paid
+	pay() {
+		if (!this.hasPendingBalance()) {
+			throw new DomainError("Session has no pending balance", 409);
+		}
+
+		const paidAmount = this.props.total;
+		this.props.total = new Decimal("0");
+		return paidAmount;
+	}
+
 	close() {
 		if (this.props.status === "CLOSED") {
 			throw new DomainError("Session already closed");

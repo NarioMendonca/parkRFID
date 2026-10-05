@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
-import { NotFoundError } from "@/errors/NotFoundError.js";
-import { MenuItem } from "./menu-item.js";
-import type { Session } from "./session.js";
 import { Decimal } from "decimal.js";
+import { NotFoundError } from "@/errors/NotFoundError.js";
+import type { MenuItem } from "./menu-item.js";
+import type { Session } from "./session.js";
 
 export type OrderItem = {
 	menuItemId: string;

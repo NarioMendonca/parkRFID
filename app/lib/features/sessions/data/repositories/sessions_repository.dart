@@ -66,14 +66,15 @@ class SessionsRepository {
   }
 
 
-  Future<String> closeSession(String braceletId) async {
+  /// Paga todo o saldo pendente da sessão, que continua aberta até a saída.
+  /// Retorna o valor pago (ex.: "21.00").
+  Future<String> paySession(String braceletId) async {
     try {
-      final response = await _dio.post('/sessions/$braceletId/close');
+      final response = await _dio.post('/sessions/$braceletId/pay');
 
-
-      return response.data['message'] ?? 'Sessão encerrada com sucesso.';
+      return response.data['paidAmount'];
     } on DioException catch (e) {
-      throw _handleError(e, 'Erro ao encerrar sessão da pulseira.');
+      throw _handleError(e, 'Erro ao pagar sessão da pulseira.');
     }
   }
 

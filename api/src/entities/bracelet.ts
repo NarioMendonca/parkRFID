@@ -77,6 +77,18 @@ export class Bracelet {
 		return order;
 	}
 
+	// Paying keeps the session open, so the bracelet can still order and pay
+	// again before leaving
+	pay() {
+		const session = this.props.activeSession;
+		if (!session) {
+			throw new NotFoundError("Session to pay not found");
+		}
+
+		const paidAmount = session.pay();
+		return { session, paidAmount };
+	}
+
 	// Leaving the park closes the active session, so it must be paid first.
 	// Returns the closed session, or null when there was no session to close.
 	exit() {
@@ -90,15 +102,6 @@ export class Bracelet {
 				`Session has a pending balance of ${session.total.toFixed(2)}`,
 				409,
 			);
-		}
-
-		return this.closeSession();
-	}
-
-	closeSession() {
-		const session = this.props.activeSession;
-		if (!session) {
-			throw new NotFoundError("Session to finish not found");
 		}
 
 		session.close();

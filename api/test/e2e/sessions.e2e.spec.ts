@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { prisma } from "@/lib/prisma.js";
 import { createTestApp } from "../helpers/app.js";
 import {
 	BRACELET_UID,
@@ -124,11 +125,11 @@ describe("POST /sessions/checkin", () => {
 		expect(response.statusCode).toBe(409);
 	});
 
-	it("permite um novo check-in depois que a sessão é encerrada", async () => {
+	it("permite um novo check-in depois da saída", async () => {
 		await checkin(app);
 		await app.inject({
 			method: "POST",
-			url: `/sessions/${BRACELET_UID}/close`,
+			url: `/sessions/${BRACELET_UID}/exit`,
 		});
 
 		const response = await app.inject({
@@ -144,21 +145,66 @@ describe("POST /sessions/checkin", () => {
 	});
 });
 
-describe("POST /sessions/:braceletId/close", () => {
-	it("encerra a sessão ativa da pulseira", async () => {
+function findSession() {
+	return prisma.sessions.findFirstOrThrow({
+		where: { braceletId: BRACELET_UID },
+		orderBy: { checkinDate: "desc" },
+	});
+}
+
+describe("POST /sessions/:braceletId/pay", () => {
+	it("zera o saldo e mantém a sessão aberta", async () => {
+		await checkin(app);
+		const menuItem = await createMenuItem(app, { price: "10.50" });
+		await placeOrder(app, BRACELET_UID, [
+			{ menuItemId: menuItem.id, amount: 2 },
+		]);
+
+		const response = await app.inject({
+			method: "POST",
+			url: `/sessions/${BRACELET_UID}/pay`,
+		});
+
+		expect(response.statusCode).toBe(200);
+		expect(response.json()).toEqual({
+			paidAmount: "21.00",
+			message: "Session successfully paid",
+		});
+
+		const session = await findSession();
+		expect(session.total.toString()).toBe("0");
+		expect(session.status).toBe("OPEN");
+		expect(session.checkoutDate).toBeNull();
+	});
+
+	it("permite novos pedidos depois de pagar, que voltam a ser cobrados", async () => {
+		await checkin(app);
+		const menuItem = await createMenuItem(app, { price: "10.50" });
+		await placeOrder(app, BRACELET_UID, [
+			{ menuItemId: menuItem.id, amount: 1 },
+		]);
+		await app.inject({ method: "POST", url: `/sessions/${BRACELET_UID}/pay` });
+
+		await placeOrder(app, BRACELET_UID, [
+			{ menuItemId: menuItem.id, amount: 1 },
+		]);
+
+		const session = await findSession();
+		expect(session.total.toString()).toBe("10.5");
+	});
+
+	it("não permite pagar uma sessão sem saldo pendente", async () => {
 		await checkin(app);
 
 		const response = await app.inject({
 			method: "POST",
-			url: `/sessions/${BRACELET_UID}/close`,
+			url: `/sessions/${BRACELET_UID}/pay`,
 		});
-		expect(response.statusCode).toBe(200);
 
-		const secondClose = await app.inject({
-			method: "POST",
-			url: `/sessions/${BRACELET_UID}/close`,
+		expect(response.statusCode).toBe(409);
+		expect(response.json()).toEqual({
+			message: "Session has no pending balance",
 		});
-		expect(secondClose.statusCode).toBe(404);
 	});
 
 	it("retorna 404 quando a pulseira não tem sessão ativa", async () => {
@@ -166,16 +212,16 @@ describe("POST /sessions/:braceletId/close", () => {
 
 		const response = await app.inject({
 			method: "POST",
-			url: `/sessions/${BRACELET_UID}/close`,
+			url: `/sessions/${BRACELET_UID}/pay`,
 		});
 
 		expect(response.statusCode).toBe(404);
 	});
 
-	it("não permite encerrar sessão de pulseira não cadastrada", async () => {
+	it("não permite pagar sessão de pulseira não cadastrada", async () => {
 		const response = await app.inject({
 			method: "POST",
-			url: `/sessions/${BRACELET_UID}/close`,
+			url: `/sessions/${BRACELET_UID}/pay`,
 		});
 
 		expect(response.statusCode).toBe(404);
@@ -204,11 +250,9 @@ describe("POST /sessions/:braceletId/exit", () => {
 		});
 		expect(response.statusCode).toBe(200);
 
-		const closeResponse = await app.inject({
-			method: "POST",
-			url: `/sessions/${BRACELET_UID}/close`,
-		});
-		expect(closeResponse.statusCode).toBe(404);
+		const session = await findSession();
+		expect(session.status).toBe("CLOSED");
+		expect(session.checkoutDate).toBeInstanceOf(Date);
 	});
 
 	it("bloqueia a saída de sessão com consumo pendente e mantém a sessão aberta", async () => {
@@ -227,11 +271,25 @@ describe("POST /sessions/:braceletId/exit", () => {
 			message: "Session has a pending balance of 10.50",
 		});
 
-		const closeResponse = await app.inject({
+		const session = await findSession();
+		expect(session.status).toBe("OPEN");
+	});
+
+	it("libera a saída depois que a sessão é paga", async () => {
+		await checkin(app);
+		const menuItem = await createMenuItem(app, { price: "10.50" });
+		await placeOrder(app, BRACELET_UID, [
+			{ menuItemId: menuItem.id, amount: 1 },
+		]);
+		await app.inject({ method: "POST", url: `/sessions/${BRACELET_UID}/pay` });
+
+		const response = await app.inject({
 			method: "POST",
-			url: `/sessions/${BRACELET_UID}/close`,
+			url: `/sessions/${BRACELET_UID}/exit`,
 		});
-		expect(closeResponse.statusCode).toBe(200);
+
+		expect(response.statusCode).toBe(200);
+		expect((await findSession()).status).toBe("CLOSED");
 	});
 
 	it("não libera a saída de pulseira não cadastrada", async () => {
