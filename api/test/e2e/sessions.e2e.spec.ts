@@ -182,17 +182,17 @@ describe("POST /sessions/:braceletId/close", () => {
 	});
 });
 
-describe("POST /sessions/:braceletId/authorize", () => {
+describe("POST /sessions/:braceletId/exit", () => {
 	it("libera a saída de pulseira sem sessão ativa", async () => {
 		await registerBracelet(app);
 
 		const response = await app.inject({
 			method: "POST",
-			url: `/sessions/${BRACELET_UID}/authorize`,
+			url: `/sessions/${BRACELET_UID}/exit`,
 		});
 
 		expect(response.statusCode).toBe(200);
-		expect(response.json().allowed).toBe(true);
+		expect(response.json()).toEqual({ message: "Exit authorized" });
 	});
 
 	it("libera a saída de sessão sem consumo e encerra a sessão", async () => {
@@ -200,10 +200,9 @@ describe("POST /sessions/:braceletId/authorize", () => {
 
 		const response = await app.inject({
 			method: "POST",
-			url: `/sessions/${BRACELET_UID}/authorize`,
+			url: `/sessions/${BRACELET_UID}/exit`,
 		});
 		expect(response.statusCode).toBe(200);
-		expect(response.json().allowed).toBe(true);
 
 		const closeResponse = await app.inject({
 			method: "POST",
@@ -212,26 +211,33 @@ describe("POST /sessions/:braceletId/authorize", () => {
 		expect(closeResponse.statusCode).toBe(404);
 	});
 
-	it("bloqueia a saída de sessão com consumo pendente", async () => {
+	it("bloqueia a saída de sessão com consumo pendente e mantém a sessão aberta", async () => {
 		await checkin(app);
-		const menuItem = await createMenuItem(app);
+		const menuItem = await createMenuItem(app, { price: "10.50" });
 		await placeOrder(app, BRACELET_UID, [
 			{ menuItemId: menuItem.id, amount: 1 },
 		]);
 
 		const response = await app.inject({
 			method: "POST",
-			url: `/sessions/${BRACELET_UID}/authorize`,
+			url: `/sessions/${BRACELET_UID}/exit`,
+		});
+		expect(response.statusCode).toBe(409);
+		expect(response.json()).toEqual({
+			message: "Session has a pending balance of 10.50",
 		});
 
-		expect(response.statusCode).toBe(401);
-		expect(response.json().allowed).toBe(false);
+		const closeResponse = await app.inject({
+			method: "POST",
+			url: `/sessions/${BRACELET_UID}/close`,
+		});
+		expect(closeResponse.statusCode).toBe(200);
 	});
 
-	it("não autoriza saída de pulseira não cadastrada", async () => {
+	it("não libera a saída de pulseira não cadastrada", async () => {
 		const response = await app.inject({
 			method: "POST",
-			url: `/sessions/${BRACELET_UID}/authorize`,
+			url: `/sessions/${BRACELET_UID}/exit`,
 		});
 
 		expect(response.statusCode).toBe(404);

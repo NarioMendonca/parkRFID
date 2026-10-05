@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { AlreadyExistsError } from "@/errors/AlreadyExistsError.js";
+import { DomainError } from "@/errors/DomainError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { MenuItem } from "./menu-item.js";
 import { Order, type OrderItem } from "./order.js";
@@ -11,11 +12,6 @@ type BraceletProps = {
 	uidRfid: string;
 	createdAt: Date;
 	activeSession: Session | null;
-};
-
-type ExitAuthorization = {
-	allowed: boolean;
-	closedSession: Session | null;
 };
 
 // Every bracelet action goes through this entity, and it only exists for
@@ -81,17 +77,22 @@ export class Bracelet {
 		return order;
 	}
 
-	authorizeExit(): ExitAuthorization {
+	// Leaving the park closes the active session, so it must be paid first.
+	// Returns the closed session, or null when there was no session to close.
+	exit() {
 		const session = this.props.activeSession;
 		if (!session) {
-			return { allowed: true, closedSession: null };
+			return null;
 		}
 
 		if (session.hasPendingBalance()) {
-			return { allowed: false, closedSession: null };
+			throw new DomainError(
+				`Session has a pending balance of ${session.total.toFixed(2)}`,
+				409,
+			);
 		}
 
-		return { allowed: true, closedSession: this.closeSession() };
+		return this.closeSession();
 	}
 
 	closeSession() {

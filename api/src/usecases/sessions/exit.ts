@@ -2,34 +2,24 @@ import { NotFoundError } from "@/errors/NotFoundError.js";
 import { PrismaBraceletsRepository } from "@/repositories/prisma-bracelets-repository.js";
 import { PrismaSessionsRepository } from "@/repositories/prisma-sessions-repository.js";
 
-type AuthorizeExitInput = {
+type ExitInput = {
 	braceletId: string;
 };
 
-type AuthorizeExitOutput = {
-	allowed: boolean;
-};
-
-export class AuthorizeExitUseCase {
+export class ExitUseCase {
 	private prismaSessionsRepository = new PrismaSessionsRepository();
 	private prismaBraceletsRepository = new PrismaBraceletsRepository();
 
-	async handle({
-		braceletId,
-	}: AuthorizeExitInput): Promise<AuthorizeExitOutput> {
+	async handle({ braceletId }: ExitInput) {
 		const bracelet =
 			await this.prismaBraceletsRepository.findByUidRfid(braceletId);
 		if (!bracelet) {
 			throw new NotFoundError("Bracelet not registered");
 		}
 
-		const { allowed, closedSession } = bracelet.authorizeExit();
+		const closedSession = bracelet.exit();
 		if (closedSession) {
 			await this.prismaSessionsRepository.saveSession(closedSession);
 		}
-
-		return {
-			allowed,
-		};
 	}
 }

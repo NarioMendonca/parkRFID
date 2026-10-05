@@ -55,14 +55,13 @@ class SessionsRepository {
   }
 
 
-  Future<bool> authorizeBracelet(String braceletId) async {
+  /// Registra a saída da pulseira. Lança exceção com a mensagem da API
+  /// quando a saída é negada (ex.: saldo pendente ou pulseira não cadastrada).
+  Future<void> exitBracelet(String braceletId) async {
     try {
-      final response = await _dio.post('/sessions/$braceletId/authorize');
-
-
-      return response.data['allowed'] ?? false;
+      await _dio.post('/sessions/$braceletId/exit');
     } on DioException catch (e) {
-      throw _handleError(e, 'Pulseira não autorizada ou inválida.');
+      throw _handleError(e, 'Saída não autorizada.');
     }
   }
 
