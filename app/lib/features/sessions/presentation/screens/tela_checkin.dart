@@ -4,8 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 
 import '../../../../core/api/api_client.dart';
+import '../../../../core/utils/nfc_off_screen.dart';
 import '../../../bracelets/presentation/screens/nfc_radar_pulse.dart';
-
 
 class MaskedTextInputFormatter extends TextInputFormatter {
   final String mask;
@@ -102,7 +102,7 @@ class _TelaCheckinState extends State<TelaCheckin> with SingleTickerProviderStat
   void dispose() {
     TelaCheckin._resetCallback = null;
     _animController.dispose();
-    _stopNfcSession();
+    _stopNfcSession(updateState: false);
     _cpfController.dispose();
     _phoneController.dispose();
     _manualTagController.dispose();
@@ -150,12 +150,21 @@ class _TelaCheckinState extends State<TelaCheckin> with SingleTickerProviderStat
     final bool isAvailable = await NfcManager.instance.isAvailable();
 
     if (!isAvailable) {
-      if (mounted) setState(() => _isNfcActive = false);
-      _showErrorDialog('NFC indisponível ou desativado neste aparelho. Utilize a digitação manual de código.');
+      if (mounted) {
+        setState(() {
+          _isNfcActive = false;
+          _step = 3; // Direciona para a tela de NFC desativado
+        });
+      }
       return;
     }
 
-    if (mounted) setState(() => _isNfcActive = true);
+    if (mounted) {
+      setState(() {
+        _step = 2; // Vai para a tela de leitura NFC
+        _isNfcActive = true;
+      });
+    }
 
     try {
       NfcManager.instance.startSession(
@@ -177,17 +186,21 @@ class _TelaCheckinState extends State<TelaCheckin> with SingleTickerProviderStat
       );
     } catch (e) {
       if (mounted) {
-        setState(() => _isNfcActive = false);
-        _showErrorDialog('Erro ao iniciar leitor NFC: $e');
+        setState(() {
+          _isNfcActive = false;
+          _step = 3;
+        });
       }
     }
   }
 
-  void _stopNfcSession() {
+  void _stopNfcSession({bool updateState = true}) {
     try {
       NfcManager.instance.stopSession();
     } catch (_) {}
-    if (mounted) setState(() => _isNfcActive = false);
+    if (updateState && mounted) {
+      setState(() => _isNfcActive = false);
+    }
   }
 
   void _handleTagDiscovered(String tagId) {
@@ -207,7 +220,7 @@ class _TelaCheckinState extends State<TelaCheckin> with SingleTickerProviderStat
       _currentScannedUid = cleanId;
       _selectedType = 'NORMAL';
     });
-    _changeStep(3);
+    _changeStep(4); // Vai para a tela de escolher o tipo de pulseira (Normal/Kid)
   }
 
   String? _extractTagId(NfcTag tag) {
@@ -254,7 +267,6 @@ class _TelaCheckinState extends State<TelaCheckin> with SingleTickerProviderStat
       return;
     }
 
-    _changeStep(2);
     _startNfcSession();
   }
 
@@ -270,7 +282,7 @@ class _TelaCheckinState extends State<TelaCheckin> with SingleTickerProviderStat
       });
       _currentScannedUid = null;
     });
-    _changeStep(4);
+    _changeStep(5); // Vai para a lista de pulseiras do grupo
   }
 
   void _removeBracelet(int index) {
@@ -299,12 +311,10 @@ class _TelaCheckinState extends State<TelaCheckin> with SingleTickerProviderStat
       final cleanCpf = _cpfController.text.replaceAll(RegExp(r'[^0-9]'), '');
       final cleanPhone = _phoneController.text.replaceAll(RegExp(r'[^0-9]'), '');
 
-
       final groupResponse = await _dio.post('/sessions/checkin/group', data: {
         'responsibleCpf': cleanCpf,
         'responsiblePhoneNumber': cleanPhone,
       });
-
 
       if (groupResponse.statusCode == 200 || groupResponse.statusCode == 201) {
         if (groupResponse.data is Map && groupResponse.data['sessionGroup'] != null) {
@@ -316,18 +326,15 @@ class _TelaCheckinState extends State<TelaCheckin> with SingleTickerProviderStat
         throw Exception('Não foi possível obter o ID do grupo criado.');
       }
 
-
       for (final bracelet in _readBracelets) {
         await _dio.post('/sessions/checkin', data: {
           'braceletId': bracelet['braceletId'],
           'sessionGroupId': createdGroupId,
-          'sessionType': bracelet['type'], // 'NORMAL' ou 'KID'
+          'sessionType': bracelet['type'],
         });
       }
 
-
       _completeSuccess();
-
     } on DioException catch (e) {
       HapticFeedback.heavyImpact();
 
@@ -361,7 +368,7 @@ class _TelaCheckinState extends State<TelaCheckin> with SingleTickerProviderStat
           'time': TimeOfDay.now().format(context),
         };
       });
-      _changeStep(5);
+      _changeStep(6); // Tela de Sucesso
     }
   }
 
@@ -394,13 +401,13 @@ class _TelaCheckinState extends State<TelaCheckin> with SingleTickerProviderStat
           HapticFeedback.lightImpact();
           if (_step == 1) {
             _resetToMenu();
-          } else if (_step == 2) {
+          } else if (_step == 2 || _step == 3) {
             _stopNfcSession();
             _changeStep(1);
-          } else if (_step == 3) {
+          } else if (_step == 4) {
             _changeStep(2);
             _startNfcSession();
-          } else if (_step == 4) {
+          } else if (_step == 5) {
             _changeStep(1);
           } else {
             _resetToMenu();
@@ -424,10 +431,19 @@ class _TelaCheckinState extends State<TelaCheckin> with SingleTickerProviderStat
       case 2:
         return _buildTela2LeituraNfc();
       case 3:
-        return _buildTela3TipoPulseira();
+        return TelaNfcDesativado(
+          key: const ValueKey('nfc_desativado'),
+          onVoltar: () {
+            _stopNfcSession();
+            _changeStep(1);
+          },
+          onTentarNovamente: _startNfcSession,
+        );
       case 4:
-        return _buildTela4Grupo();
+        return _buildTela3TipoPulseira();
       case 5:
+        return _buildTela4Grupo();
+      case 6:
         return _buildTela5Sucesso();
       case 0:
       default:
@@ -444,14 +460,6 @@ class _TelaCheckinState extends State<TelaCheckin> with SingleTickerProviderStat
       body: SafeArea(
         child: Column(
           children: [
-            Container(
-              color: colorScheme.primary,
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              child: Center(
-                child: Image.asset('assets/images/logo.png', height: 50, fit: BoxFit.contain),
-              ),
-            ),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.all(24.0),
@@ -547,7 +555,7 @@ class _TelaCheckinState extends State<TelaCheckin> with SingleTickerProviderStat
                     alignment: Alignment.centerLeft,
                     child: IconButton(
                       icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 22),
-                      onPressed: _resetToMenu, 
+                      onPressed: _resetToMenu,
                     ),
                   ),
                   Image.asset('assets/images/logo.png', height: 45, fit: BoxFit.contain),
@@ -691,20 +699,14 @@ class _TelaCheckinState extends State<TelaCheckin> with SingleTickerProviderStat
                 ),
               ),
               const Spacer(),
-              GestureDetector(
-                onTap: () => _handleTagDiscovered('SIM-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}'),
-                child: Transform.scale(
-                  scale: 1.1,
-                  child: const NfcRadarPulse(),
-                ),
-              ),
+              const NfcRadarPulse(),
               const SizedBox(height: 40),
               const Text('Aproxime a pulseira', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
               const SizedBox(height: 12),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 32.0),
                 child: Text(
-                  _isNfcActive ? 'Toque no anel ou aproxime a tag física' : 'NFC inativo. Toque no anel para simular leitura.',
+                  'Toque no anel ou aproxime a tag física',
                   style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14),
                   textAlign: TextAlign.center,
                 ),
@@ -723,7 +725,7 @@ class _TelaCheckinState extends State<TelaCheckin> with SingleTickerProviderStat
                       ),
                       onPressed: () {
                         HapticFeedback.lightImpact();
-                        _changeStep(4);
+                        _changeStep(5);
                       },
                       child: const Text('Ver pulseiras do grupo', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
@@ -883,7 +885,8 @@ class _TelaCheckinState extends State<TelaCheckin> with SingleTickerProviderStat
                     IconButton(
                       onPressed: () {
                         HapticFeedback.lightImpact();
-                        _changeStep(1);
+                        _changeStep(2);
+                        _startNfcSession();
                       },
                       icon: Container(
                         padding: const EdgeInsets.all(8),

@@ -82,7 +82,7 @@ class _TelaMenuState extends State<TelaMenu> {
         return const SizedBox.shrink();
       },
       transitionBuilder: (context, animation, secondaryAnimation, child) {
-        // Animação de entrada suave (fade + scale leve)
+
         final curvedAnimation = CurvedAnimation(
           parent: animation,
           curve: Curves.easeOutCubic,
@@ -96,7 +96,7 @@ class _TelaMenuState extends State<TelaMenu> {
               builder: (context, setDialogState) {
                 final theme = Theme.of(context);
                 final colorScheme = theme.colorScheme;
-                // Pega a altura exata do teclado para empurrar o modal para cima sem esmagá-lo
+
                 final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
 
                 return AlertDialog(
@@ -377,18 +377,6 @@ class _TelaMenuState extends State<TelaMenu> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              color: colorScheme.primary,
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Center(
-                child: Image.asset(
-                  'assets/images/logo.png',
-                  height: 50,
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
               child: Column(

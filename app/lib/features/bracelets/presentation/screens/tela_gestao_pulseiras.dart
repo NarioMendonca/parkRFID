@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/utils/nfc_off_screen.dart';
 import '../controllers/bracelets_controller.dart';
 import 'nfc_radar_pulse.dart';
+
 
 final GlobalKey<_TelaGestaoPulseirasContentState> gestaoPulseirasKey = GlobalKey();
 
@@ -59,7 +61,21 @@ class _TelaGestaoPulseirasContentState extends State<_TelaGestaoPulseirasContent
     });
   }
 
-  void _startScanning(bool deleteMode) {
+  void _startScanning(bool deleteMode) async {
+    final controller = context.read<BraceletsController>();
+    final bool isAvailable = await controller.isNfcAvailable();
+
+    if (!isAvailable) {
+      if (mounted) {
+        setState(() {
+          _isDeleteMode = deleteMode;
+          _step = 4;
+        });
+        widget.onNavbarVisibilityChanged?.call(false);
+      }
+      return;
+    }
+
     setState(() {
       _isDeleteMode = deleteMode;
       _step = 2;
@@ -68,10 +84,7 @@ class _TelaGestaoPulseirasContentState extends State<_TelaGestaoPulseirasContent
       _isCheckingStatus = false;
     });
 
-    // Oculta a navbar do menu principal quando entra no fluxo NFC
     widget.onNavbarVisibilityChanged?.call(false);
-
-    final controller = context.read<BraceletsController>();
 
     controller.startNfcScan((uid) async {
       if (_scannedUid != null) return;
@@ -87,6 +100,17 @@ class _TelaGestaoPulseirasContentState extends State<_TelaGestaoPulseirasContent
 
   Future<void> _restartScanning() async {
     final controller = context.read<BraceletsController>();
+    final bool isAvailable = await controller.isNfcAvailable();
+
+    if (!isAvailable) {
+      if (mounted) {
+        setState(() {
+          _step = 4;
+        });
+      }
+      return;
+    }
+
     try { controller.stopNfc(); } catch (_) {}
 
     setState(() {
@@ -124,7 +148,6 @@ class _TelaGestaoPulseirasContentState extends State<_TelaGestaoPulseirasContent
         _localErrorMessage = null;
       });
 
-      // Restaura/mostra novamente a navbar quando voltar para o passo 1 (Menu)
       widget.onNavbarVisibilityChanged?.call(true);
     }
   }
@@ -153,6 +176,13 @@ class _TelaGestaoPulseirasContentState extends State<_TelaGestaoPulseirasContent
         return _buildTela2Leitura();
       case 3:
         return _buildTela3Resultado();
+      case 4:
+        return TelaNfcDesativado(
+          key: const ValueKey('nfc_desativado'),
+          tituloHeader: _isDeleteMode ? 'Apagar pulseira' : 'Cadastrar pulseira',
+          onVoltar: _resetFlow,
+          onTentarNovamente: () => _startScanning(_isDeleteMode),
+        );
       case 1:
       default:
         return _buildTela1Home();
@@ -168,18 +198,6 @@ class _TelaGestaoPulseirasContentState extends State<_TelaGestaoPulseirasContent
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              color: colorScheme.primary,
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Center(
-                child: Image.asset(
-                  'assets/images/logo.png',
-                  height: 50,
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
               child: Column(

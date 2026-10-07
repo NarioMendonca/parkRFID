@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="NONE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="b071f4c1-c575-4a50-8857-0bf54aee85d8" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/parkrfid.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/lib/core/utils/masked_text_input_formatter.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/lib/core/utils/nfc_off_screen.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/lib/features/orders/data/models/comanda_model.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/lib/features/orders/data/models/order_item_model.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/lib/features/orders/data/services/comanda_service.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/lib/features/orders/presentation/controllers/pedido_provider.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/lib/features/orders/presentation/screens/tela_atribuir_mesa.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/lib/features/orders/presentation/screens/tela_consultar_comanda.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/lib/features/orders/presentation/screens/tela_fazer_pedido_inicio.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/lib/features/orders/presentation/screens/tela_revisar_pedido.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/lib/features/orders/presentation/screens/tela_selecao_produtos.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/core/api/api_client.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/core/api/api_client.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/features/bracelets/presentation/controllers/bracelets_controller.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/features/bracelets/presentation/controllers/bracelets_controller.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/features/bracelets/presentation/screens/tela_gestao_pulseiras.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/features/bracelets/presentation/screens/tela_gestao_pulseiras.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/features/home/presentation/screens/main_navigation_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/features/home/presentation/screens/main_navigation_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/features/menu/presentation/screens/tela_menu.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/features/menu/presentation/screens/tela_menu.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/features/sessions/presentation/screens/tela_checkin.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/features/sessions/presentation/screens/tela_checkin.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/main.dart" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Dart File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;digg0&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/NarioMendonca/parkRFID.git&quot;,
+    &quot;accountId&quot;: &quot;c79979b0-debf-46c2-90ac-77260c21c575&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 6
+}</component>
+  <component name="ProjectId" id="3KCpYTrGTymHdYV0wpSIJ6DJuJ0" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Flutter.main.dart.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "dart.analysis.tool.window.visible": "false",
+    "git-widget-placeholder": "main",
+    "io.flutter.reload.alreadyRun": "true",
+    "settings.editor.selected.configurable": "dart.settings",
+    "show.migrate.to.gradle.popup": "false"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\roger\Documents\parkrfid\app\lib\features\orders\presentation\screens" />
+      <recent name="C:\Users\roger\Documents\parkrfid\app\lib\features\orders\data\models" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="main.dart" type="FlutterRunConfigurationType" factoryName="Flutter">
+      <option name="filePath" value="$PROJECT_DIR$/app/lib/main.dart" />
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="b071f4c1-c575-4a50-8857-0bf54aee85d8" name="Changes" comment="" />
+      <created>1791071452358</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1791071452358</updated>
+    </task>
+    <servers />
+  </component>
+</project>

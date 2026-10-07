@@ -7,6 +7,14 @@ class BraceletsController extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  Future<bool> isNfcAvailable() async {
+    try {
+      return await NfcManager.instance.isAvailable();
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<void> checkNfcSupport() async {
     try {
       await NfcManager.instance.isAvailable();
@@ -22,7 +30,6 @@ class BraceletsController extends ChangeNotifier {
     }
   }
 
-
   Future<String?> registerBracelet(String uid) async {
     _isLoading = true;
     notifyListeners();
@@ -35,7 +42,6 @@ class BraceletsController extends ChangeNotifier {
     } on DioException catch (e) {
       _isLoading = false;
       notifyListeners();
-
 
       final responseData = e.response?.data;
       if (responseData is Map && responseData.containsKey('message')) {
