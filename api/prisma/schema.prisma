@@ -15,9 +15,13 @@ datasource db {
 }
 
 model SessionsGroup {
-  id                     String @id @default(uuid())
+  id                     String    @id @default(uuid())
   responsibleCpf         String
   responsiblePhoneNumber String
+  balance                Decimal   @default("0")
+  createdAt              DateTime  @default(now())
+  checkoutDt             DateTime?
+  status                 Status    @default(OPEN)
 
   session Sessions[]
 }
@@ -67,9 +71,11 @@ model MenuItems {
 }
 
 model Orders {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  sessionId String
+  id             String   @id @default(uuid())
+  createdAt      DateTime @default(now())
+  sessionId      String
+  sessionGroupId String
+  createdBy      String
 
   session    Sessions     @relation(fields: [sessionId], references: [id])
   orderItems OrderItems[]
