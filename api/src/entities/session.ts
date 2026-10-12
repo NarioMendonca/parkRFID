@@ -10,13 +10,13 @@ export type SessionType = "NORMAL" | "KID";
 
 type SessionProps = {
 	id: string;
+	group: SessionGroup;
 	braceletId: string;
 	checkinDate: Date;
 	checkoutDate: Date | null;
 	status: SessionStatus;
 	total: Decimal;
 	sessionType: SessionType;
-	sessionsGroupId: string;
 };
 
 type OpenSessionInput = {
@@ -37,7 +37,7 @@ export class Session {
 			status: "OPEN",
 			total: new Decimal("0"),
 			sessionType,
-			sessionsGroupId: sessionGroup.id,
+			group: sessionGroup,
 		});
 	}
 
@@ -47,6 +47,10 @@ export class Session {
 
 	get id() {
 		return this.props.id;
+	}
+
+	get group() {
+		return this.props.group;
 	}
 
 	get braceletId() {
@@ -73,12 +77,12 @@ export class Session {
 		return this.props.sessionType;
 	}
 
-	get sessionsGroupId() {
-		return this.props.sessionsGroupId;
-	}
-
 	addValueToBalance(value: Decimal) {
 		this.props.total = this.props.total.add(value);
+	}
+
+	addValueToGroupBalance(value: Decimal) {
+		this.props.group
 	}
 
 	hasPendingBalance() {

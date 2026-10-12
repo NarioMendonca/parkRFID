@@ -1,32 +1,44 @@
 import { Bracelet } from "@/entities/bracelet.js";
 import { prisma } from "@/lib/prisma.js";
-import { toSessionEntity } from "./prisma-sessions-repository.js";
+import { PrismaSessionsRepository, toSessionEntity } from "./prisma-sessions-repository.js";
+
+const sessionRepository = new PrismaSessionsRepository()
 
 export class PrismaBraceletsRepository {
 	async findByUidRfid(uid_rfid: string) {
-		const bracelet = await prisma.bracelets.findFirst({
+		const braceletData = await prisma.bracelets.findFirst({
 			where: {
 				uid_rfid,
 			},
 		});
-
-		if (!bracelet) {
+		if (!braceletData) {
 			return null;
 		}
 
-		const activeSession = await prisma.sessions.findFirst({
-			where: {
-				braceletId: uid_rfid,
-				status: "OPEN",
-			},
+		const bracelet = Bracelet.restore({
+			id: braceletData.id,
+			uidRfid: braceletData.uid_rfid,
+			createdAt: braceletData.createdAt,
+			activeSession: null,
 		});
 
-		return Bracelet.restore({
-			id: bracelet.id,
-			uidRfid: bracelet.uid_rfid,
-			createdAt: bracelet.createdAt,
-			activeSession: activeSession ? toSessionEntity(activeSession) : null,
+		const session = await sessionRepository.findActiveSessionByBraceletId(uid_rfid)
+		if (!session) {
+			return bracelet
+		}
+		
+		const sessionGroup = await sessionRepository.findActiveSessionGroupById(session.braceletId)
+		if (!sessionGroup) {
+			return bracelet
+		}
+
+		const braceleteWithSession = Bracelet.restore({
+			id: braceletData.id,
+			uidRfid: braceletData.uid_rfid,
+			createdAt: braceletData.createdAt,
+			activeSession: await toSessionEntity(session, sessionGroup),
 		});
+		return braceleteWithSession
 	}
 
 	async register(bracelet: Bracelet) {

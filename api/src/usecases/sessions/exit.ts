@@ -1,3 +1,4 @@
+import { DomainError } from "@/errors/DomainError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
 import { PrismaBraceletsRepository } from "@/repositories/prisma-bracelets-repository.js";
 import { PrismaSessionsRepository } from "@/repositories/prisma-sessions-repository.js";
@@ -22,8 +23,23 @@ export class ExitUseCase {
 		}
 
 		const closedSession = bracelet.exit();
-		if (closedSession) {
-			await this.prismaSessionsRepository.saveSession(closedSession);
+		if (!closedSession) {
+			throw new DomainError("Erro ao marcar sessão como fechada")
+		}
+
+		await this.prismaSessionsRepository.saveSession(closedSession);
+
+		// if the closed session is the last of a group, it should be closed
+		const sessionGroup = await this.prismaSessionsRepository.findActiveSessionGroupById(closedSession.group.id)
+		if (!sessionGroup) {
+			// TODO: create a Log to show a critical error: group of the session not found
+			return
+		}
+
+		sessionGroup.close()
+
+		if (sessionGroup.size === 0) {
+			await this.prismaSessionsRepository.saveGroup(sessionGroup)
 		}
 	}
 }

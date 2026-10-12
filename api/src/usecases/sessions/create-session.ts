@@ -23,15 +23,15 @@ export class CreateSessionUseCase {
 			throw new NotFoundError("Bracelet not registered");
 		}
 
-		const searchedGroup =
-			await this.prismaSessionsRepository.findSessionGroupById(sessionGroupId);
-		if (!searchedGroup) {
+		const sessionGroup =
+			await this.prismaSessionsRepository.findActiveSessionGroupById(sessionGroupId);
+		if (!sessionGroup) {
 			throw new NotFoundError(
 				"Session Group to register bracelet session not found",
 			);
 		}
 
-		const session = bracelet.checkin(searchedGroup, sessionType ?? "NORMAL");
+		const session = bracelet.checkin(sessionGroup, sessionType ?? "NORMAL");
 
 		await this.prismaSessionsRepository.createSession(session);
 		return session;
