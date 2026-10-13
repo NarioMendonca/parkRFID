@@ -20,18 +20,20 @@ type OrderProps = {
 	createdAt: Date;
 	items: OrderLine[];
 	balance: Decimal;
+	createdBy: string;
 };
 
 type PlaceOrderInput = {
 	session: Session;
 	items: OrderItem[];
 	menuItems: MenuItem[];
+	createdBy: string;
 };
 
 export class Order {
 	private constructor(private props: OrderProps) {}
 
-	static place({ session, items, menuItems }: PlaceOrderInput) {
+	static place({ session, items, menuItems, createdBy }: PlaceOrderInput) {
 		const pricesById = new Map(
 			menuItems.map((menuItem) => [menuItem.id, menuItem.price]),
 		);
@@ -56,6 +58,7 @@ export class Order {
 			createdAt: new Date(),
 			items: lines,
 			balance: orderTotalBalance,
+			createdBy
 		});
 	}
 
@@ -77,5 +80,9 @@ export class Order {
 
 	get balance(): Decimal {
 		return this.props.balance;
+	}
+
+	get createdBy() {
+		return this.props.createdBy
 	}
 }
