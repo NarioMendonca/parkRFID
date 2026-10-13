@@ -55,8 +55,7 @@ class SessionsRepository {
   }
 
 
-  /// Registra a saída da pulseira. Lança exceção com a mensagem da API
-  /// quando a saída é negada (ex.: saldo pendente ou pulseira não cadastrada).
+
   Future<void> exitBracelet(String braceletId) async {
     try {
       await _dio.post('/sessions/$braceletId/exit');
@@ -66,8 +65,7 @@ class SessionsRepository {
   }
 
 
-  /// Paga todo o saldo pendente da sessão, que continua aberta até a saída.
-  /// Retorna o valor pago (ex.: "21.00").
+
   Future<String> paySession(String braceletId) async {
     try {
       final response = await _dio.post('/sessions/$braceletId/pay');

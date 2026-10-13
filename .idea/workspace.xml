@@ -5,30 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b071f4c1-c575-4a50-8857-0bf54aee85d8" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/parkrfid.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/lib/core/utils/masked_text_input_formatter.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/lib/core/utils/nfc_off_screen.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/lib/features/orders/data/models/comanda_model.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/lib/features/orders/data/models/order_item_model.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/lib/features/orders/data/services/comanda_service.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/lib/features/orders/presentation/controllers/pedido_provider.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/lib/features/orders/presentation/screens/tela_atribuir_mesa.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/lib/features/orders/presentation/screens/tela_consultar_comanda.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/lib/features/orders/presentation/screens/tela_fazer_pedido_inicio.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/lib/features/orders/presentation/screens/tela_revisar_pedido.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/lib/features/orders/presentation/screens/tela_selecao_produtos.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/lib/core/api/api_client.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/core/api/api_client.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/lib/features/bracelets/presentation/controllers/bracelets_controller.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/features/bracelets/presentation/controllers/bracelets_controller.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/lib/features/bracelets/presentation/screens/tela_gestao_pulseiras.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/features/bracelets/presentation/screens/tela_gestao_pulseiras.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/lib/features/home/presentation/screens/main_navigation_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/features/home/presentation/screens/main_navigation_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/lib/features/menu/presentation/screens/tela_menu.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/features/menu/presentation/screens/tela_menu.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/lib/features/sessions/presentation/screens/tela_checkin.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/features/sessions/presentation/screens/tela_checkin.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/lib/features/bracelets/presentation/screens/desktop/gestao_pulseiras_desktop.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/lib/features/home/presentation/screens/desktop/desktop_navigation.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/lib/features/menu/presentation/screens/desktop/menu_desktop.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/lib/features/reports/data/models/consumption_report_model.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/lib/features/reports/data/models/session_report_model.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/lib/features/reports/data/repositories/reports_repositories.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/lib/features/reports/presentation/screens/desktop/tela_relatorios_desktop.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/lib/features/sessions/presentation/screens/desktop/checkin_desktop.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/features/sessions/data/repositories/sessions_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/features/sessions/data/repositories/sessions_repository.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/main.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -70,23 +57,23 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Flutter.main.dart.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "main",
-    "io.flutter.reload.alreadyRun": "true",
-    "settings.editor.selected.configurable": "dart.settings",
-    "show.migrate.to.gradle.popup": "false"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Flutter.main.dart.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;io.flutter.reload.alreadyRun&quot;: &quot;true&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;dart.settings&quot;,
+    &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\roger\Documents\parkrfid\app\lib\features\orders\presentation\screens" />
