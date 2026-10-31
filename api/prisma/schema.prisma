@@ -67,12 +67,35 @@ model MenuItems {
 }
 
 model Orders {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  sessionId String
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  sessionId   String
+  tableNumber String?
 
   session    Sessions     @relation(fields: [sessionId], references: [id])
   orderItems OrderItems[]
+  printJobs  PrintJobs[]
+}
+
+enum PrintStatus {
+  PENDING
+  PRINTING
+  PRINTED
+  FAILED
+}
+
+// Queue of tickets to print, one job per order, handled oldest first
+model PrintJobs {
+  id            String      @id @default(uuid())
+  orderId       String
+  status        PrintStatus @default(PENDING)
+  attempts      Int         @default(0)
+  lastError     String?
+  createdAt     DateTime    @default(now())
+  nextAttemptAt DateTime    @default(now())
+  printedAt     DateTime?
+
+  order Orders @relation(fields: [orderId], references: [id])
 }
 
 model OrderItems {

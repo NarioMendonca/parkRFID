@@ -12,6 +12,7 @@ process.env.DATABASE_URL = `file:${dbPath}`;
 const { prisma } = await import("@/lib/prisma.js");
 
 beforeEach(async () => {
+	await prisma.printJobs.deleteMany();
 	await prisma.orderItems.deleteMany();
 	await prisma.orders.deleteMany();
 	await prisma.payments.deleteMany();

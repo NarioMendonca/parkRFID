@@ -2,17 +2,21 @@ import type { Order } from "@/entities/order.js";
 import { prisma } from "@/lib/prisma.js";
 
 export class PrismaOrdersRepository {
-	async createOrder(order: Order) {
+	// When printing is on, the print job is saved together with the order, so an
+	// order is never saved without its ticket being queued
+	async createOrder(order: Order, options: { enqueuePrint?: boolean } = {}) {
 		await prisma.orders.create({
 			data: {
 				id: order.id,
 				sessionId: order.sessionId,
 				createdAt: order.createdAt,
+				tableNumber: order.tableNumber,
 				orderItems: {
 					createMany: {
 						data: order.items,
 					},
 				},
+				...(options.enqueuePrint ? { printJobs: { create: {} } } : {}),
 			},
 		});
 	}

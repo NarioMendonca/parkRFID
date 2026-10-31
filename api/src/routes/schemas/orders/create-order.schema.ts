@@ -3,6 +3,7 @@ import z from "zod";
 export const CreateOrderSchema = {
 	body: z.object({
 		braceletId: z.string(),
+		tableNumber: z.string().optional(),
 		items: z.array(z.object({ menuItemId: z.string(), amount: z.number() })),
 	}),
 	response: {

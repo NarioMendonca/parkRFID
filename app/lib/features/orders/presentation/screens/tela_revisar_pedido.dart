@@ -20,6 +20,7 @@ class _TelaRevisarPedidoState extends State<TelaRevisarPedido> {
     try {
       final payload = {
         "braceletId": provider.braceletId ?? "",
+        if (provider.mesa != null) "tableNumber": provider.mesa,
         "items": provider.itensCarrinho.map((item) {
           return {
             "menuItemId": item['id'],
