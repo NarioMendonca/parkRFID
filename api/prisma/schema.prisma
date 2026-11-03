@@ -24,16 +24,7 @@ model SessionsGroup {
   status                 Status    @default(OPEN)
 
   session Sessions[]
-}
-
-enum Status {
-  OPEN
-  CLOSED
-}
-
-enum SessionType {
-  NORMAL
-  KID
+  order   Orders[]
 }
 
 model Bracelets {
@@ -42,20 +33,30 @@ model Bracelets {
   createdAt DateTime @default(now())
 }
 
+enum Status {
+  OPEN
+  CLOSED
+}
+
+enum SessionRole {
+  NORMAL
+  KID
+}
+
 model Sessions {
-  id              String      @id @default(uuid())
-  braceletId      String
-  checkoutDate    DateTime?
-  checkinDate     DateTime    @default(now())
-  status          Status      @default(OPEN)
-  total           Decimal     @default("0")
-  sessionType     SessionType @default(NORMAL)
-  sessionsGroupId String
+  id             String      @id @default(uuid())
+  braceletId     String
+  checkoutDate   DateTime?
+  checkinDate    DateTime    @default(now())
+  status         Status      @default(OPEN)
+  total          Decimal     @default("0")
+  sessionType    SessionRole @default(NORMAL)
+  sessionGroupId String
 
-  sessionGroup SessionsGroup @relation(fields: [sessionsGroupId], references: [id])
+  sessionGroup SessionsGroup @relation(fields: [sessionGroupId], references: [id])
 
-  orders   Orders[]
-  payments Payments[]
+  order   Orders[]
+  payment Payments[]
 
   @@unique([braceletId], where: { status: "OPEN" })
 }
@@ -67,18 +68,24 @@ model MenuItems {
   price       Decimal
   isAvaliable Boolean
 
-  orderItems OrderItems[]
+  orderItem OrderItems[]
+}
+
+enum SessionType {
+  SESSION
+  SESSION_GROUP
 }
 
 model Orders {
-  id             String   @id @default(uuid())
-  createdAt      DateTime @default(now())
-  sessionId      String
-  sessionGroupId String
-  createdBy      String
+  id             String      @id @default(uuid())
+  createdAt      DateTime    @default(now())
+  sessionId      String?
+  sessionGroupId String?
+  createdBy      SessionType
 
-  session    Sessions     @relation(fields: [sessionId], references: [id])
-  orderItems OrderItems[]
+  session      Sessions?      @relation(fields: [sessionId], references: [id])
+  sessionGroup SessionsGroup? @relation(fields: [sessionGroupId], references: [id])
+  orderItem    OrderItems[]
 }
 
 model OrderItems {
@@ -86,17 +93,18 @@ model OrderItems {
   amount     Int
   unitPrice  Decimal
   menuItemId String
-  ordersId   String
+  orderId    String
 
-  menuItems MenuItems @relation(fields: [menuItemId], references: [id])
-  orders    Orders    @relation(fields: [ordersId], references: [id])
+  menuItem MenuItems @relation(fields: [menuItemId], references: [id])
+  order    Orders    @relation(fields: [orderId], references: [id])
 }
 
 model Payments {
-  id        String   @id @default(uuid())
+  id        String      @id @default(uuid())
   amount    Decimal
-  createdAt DateTime @default(now())
+  createdAt DateTime    @default(now())
   sessionId String
+  paymentTo SessionType
 
   session Sessions @relation(fields: [sessionId], references: [id])
 }
