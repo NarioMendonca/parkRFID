@@ -8,7 +8,8 @@ export class PrismaOrdersRepository {
 				id: order.id,
 				sessionId: order.sessionId,
 				createdAt: order.createdAt,
-				orderItems: {
+				createdBy: order.createdBy,
+				orderItem: {
 					createMany: {
 						data: order.items,
 					},

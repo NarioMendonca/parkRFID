@@ -34,7 +34,11 @@ export class PrismaSessionsRepository {
 			include: {
 				_count: {
 					select: {
-						session: true
+						session: {
+							where: {
+								status: 'OPEN'
+							}
+						}
 					}
 				}
 			}
@@ -73,7 +77,7 @@ export class PrismaSessionsRepository {
 				status: session.status,
 				total: session.total,
 				sessionType: session.sessionType,
-				sessionsGroupId: session.group.id,
+				sessionGroupId: session.group.id,
 			},
 		});
 	}
@@ -122,6 +126,7 @@ export class PrismaSessionsRepository {
 					sessionId: payment.sessionId,
 					amount: payment.amount,
 					createdAt: payment.createdAt,
+					paymentTo: payment.paymentTo,
 				},
 			}),
 		]);

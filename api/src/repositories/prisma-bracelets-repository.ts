@@ -27,7 +27,7 @@ export class PrismaBraceletsRepository {
 			return bracelet
 		}
 		
-		const sessionGroup = await sessionRepository.findActiveSessionGroupById(session.braceletId)
+		const sessionGroup = await sessionRepository.findActiveSessionGroupById(session.sessionGroupId)
 		if (!sessionGroup) {
 			return bracelet
 		}

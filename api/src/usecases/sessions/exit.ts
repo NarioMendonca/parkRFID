@@ -15,11 +15,11 @@ export class ExitUseCase {
 		const bracelet =
 			await this.prismaBraceletsRepository.findByUidRfid(braceletId);
 		if (!bracelet) {
-			throw new NotFoundError("Bracelet not registered");
+			throw new NotFoundError("Bracelete não registrado");
 		}
 
 		if (!bracelet.activeSession) {
-			throw new NotFoundError("No active session was found in bracelet")
+			throw new NotFoundError("Nenhuma sessão ativa foi encontrada nesse bracelete")
 		}
 
 		const closedSession = bracelet.exit();
@@ -32,13 +32,13 @@ export class ExitUseCase {
 		// if the closed session is the last of a group, it should be closed
 		const sessionGroup = await this.prismaSessionsRepository.findActiveSessionGroupById(closedSession.group.id)
 		if (!sessionGroup) {
+			console.error(`Critical: A session group of a session was closed or not created while session is active, sessionId: ${closedSession.id}`)
 			// TODO: create a Log to show a critical error: group of the session not found
 			return
 		}
 
-		sessionGroup.close()
-
 		if (sessionGroup.size === 0) {
+			sessionGroup.close()
 			await this.prismaSessionsRepository.saveGroup(sessionGroup)
 		}
 	}

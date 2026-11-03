@@ -26,28 +26,28 @@ export async function getSessionHistory(sessionId: string) {
 			id: sessionId,
 		},
 		include: {
-			orders: {
+			order: {
 				include: {
-					orderItems: {
+					orderItem: {
 						include: {
-							menuItems: true,
+							menuItem: true,
 						},
 					},
 				},
 			},
-			payments: true,
+			payment: true,
 		},
 	});
 	if (!session) {
 		throw new NotFoundError("Session not found");
 	}
 
-	const { orders, payments, ...sessionData } = session;
+	const { order: orders, payment: payments, ...sessionData } = session;
 
 	const orderEvents: SessionEvent[] = orders.map((order) => {
-		const items = order.orderItems.map((orderItem) => ({
+		const items = order.orderItem.map((orderItem) => ({
 			menuItemId: orderItem.menuItemId,
-			name: orderItem.menuItems.name,
+			name: orderItem.menuItem.name,
 			amount: orderItem.amount,
 			unitPrice: orderItem.unitPrice,
 			subtotal: orderItem.unitPrice.mul(orderItem.amount),

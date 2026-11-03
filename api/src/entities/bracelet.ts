@@ -71,6 +71,7 @@ export class Bracelet {
 			session: this.props.activeSession,
 			items,
 			menuItems,
+			createdBy: "SESSION",
 		});
 
 		this.props.activeSession.addValueToBalance(order.balance);
@@ -86,7 +87,11 @@ export class Bracelet {
 			throw new NotFoundError("Session to pay not found");
 		}
 
-		const payment = Payment.register({ session, amount: session.pay() });
+		const payment = Payment.register({
+			session,
+			amount: session.pay(),
+			paymentTo: "SESSION",
+		});
 		return { session, payment };
 	}
 

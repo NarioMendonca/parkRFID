@@ -7,7 +7,7 @@ export async function getTodayConsumption() {
 
 	const orderItems = await prisma.orderItems.findMany({
 		where: {
-			orders: {
+			order: {
 				createdAt: {
 					gte: today,
 				},

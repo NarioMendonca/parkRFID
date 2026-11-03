@@ -14,20 +14,22 @@ export type OrderLine = OrderItem & {
 	unitPrice: Decimal;
 };
 
+export type OrderCreatedBy = "SESSION" | "SESSION_GROUP";
+
 type OrderProps = {
 	id: string;
 	sessionId: string;
 	createdAt: Date;
 	items: OrderLine[];
 	balance: Decimal;
-	createdBy: string;
+	createdBy: OrderCreatedBy;
 };
 
 type PlaceOrderInput = {
 	session: Session;
 	items: OrderItem[];
 	menuItems: MenuItem[];
-	createdBy: string;
+	createdBy: OrderCreatedBy;
 };
 
 export class Order {

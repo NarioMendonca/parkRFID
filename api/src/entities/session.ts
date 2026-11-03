@@ -53,6 +53,10 @@ export class Session {
 		return this.props.group;
 	}
 
+	get sessionsGroupId() {
+		return this.props.group.id;
+	}
+
 	get braceletId() {
 		return this.props.braceletId;
 	}

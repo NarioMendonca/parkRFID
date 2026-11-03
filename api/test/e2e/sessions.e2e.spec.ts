@@ -229,7 +229,7 @@ describe("POST /sessions/:braceletId/pay", () => {
 });
 
 describe("POST /sessions/:braceletId/exit", () => {
-	it("libera a saída de pulseira sem sessão ativa", async () => {
+	it("Bloqueia a saida de pulseira sem sessão ativa", async () => {
 		await registerBracelet(app);
 
 		const response = await app.inject({
@@ -237,7 +237,7 @@ describe("POST /sessions/:braceletId/exit", () => {
 			url: `/sessions/${BRACELET_UID}/exit`,
 		});
 
-		expect(response.statusCode).toBe(200);
+		expect(response.statusCode).toBe(404);
 		expect(response.json()).toEqual({ message: "Exit authorized" });
 	});
 

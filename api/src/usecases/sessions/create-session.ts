@@ -1,4 +1,5 @@
 import { NotFoundError } from "@/errors/NotFoundError.js";
+import { SessionDTO } from "@/model/dtos/session-dto.js";
 import { PrismaBraceletsRepository } from "@/repositories/prisma-bracelets-repository.js";
 import { PrismaSessionsRepository } from "@/repositories/prisma-sessions-repository.js";
 
@@ -16,7 +17,7 @@ export class CreateSessionUseCase {
 		braceletId,
 		sessionGroupId,
 		sessionType,
-	}: CreateSessionInput) {
+	}: CreateSessionInput): Promise<SessionDTO> {
 		const bracelet =
 			await this.prismaBraceletsRepository.findByUidRfid(braceletId);
 		if (!bracelet) {
@@ -34,6 +35,15 @@ export class CreateSessionUseCase {
 		const session = bracelet.checkin(sessionGroup, sessionType ?? "NORMAL");
 
 		await this.prismaSessionsRepository.createSession(session);
-		return session;
+		return {
+			id: session.id,
+			braceletId: session.braceletId,
+			checkinDate: session.checkinDate,
+			checkoutDate: session.checkoutDate,
+			sessionType: session.sessionType,
+			status: session.status,
+			total: session.total,
+			sessionGroupId: session.group.id
+		};
 	}
 }

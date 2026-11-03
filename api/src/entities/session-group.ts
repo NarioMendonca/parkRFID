@@ -13,7 +13,7 @@ type SessionGroupProps = {
 	status: GroupStatus;
 	createdAt: Date;
 	checkoutDt: Date | null;
-	size: number;
+	size: number; // active sessions in group
 };
 
 type CreateSessionGroupInput = {
