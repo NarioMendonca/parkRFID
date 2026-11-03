@@ -12,6 +12,17 @@
 -- RedefineTables
 PRAGMA defer_foreign_keys=ON;
 PRAGMA foreign_keys=OFF;
+CREATE TABLE "new_MenuItems" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "name" TEXT NOT NULL,
+    "category" TEXT NOT NULL,
+    "price" DECIMAL NOT NULL,
+    "isAvaliable" BOOLEAN NOT NULL DEFAULT true,
+    "isActive" BOOLEAN NOT NULL DEFAULT true
+);
+INSERT INTO "new_MenuItems" ("category", "id", "isAvaliable", "name", "price") SELECT "category", "id", "isAvaliable", "name", "price" FROM "MenuItems";
+DROP TABLE "MenuItems";
+ALTER TABLE "new_MenuItems" RENAME TO "MenuItems";
 CREATE TABLE "new_OrderItems" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "amount" INTEGER NOT NULL,

@@ -66,7 +66,8 @@ model MenuItems {
   name        String
   category    String
   price       Decimal
-  isAvaliable Boolean
+  isAvaliable Boolean @default(true)
+  isActive    Boolean @default(true)
 
   orderItem OrderItems[]
 }
