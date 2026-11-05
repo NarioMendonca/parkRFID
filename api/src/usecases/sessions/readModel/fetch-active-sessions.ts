@@ -10,5 +10,3 @@ export async function fetchActiveSessions() {
 		},
 	});
 }
-
-console.log(await fetchActiveSessions());

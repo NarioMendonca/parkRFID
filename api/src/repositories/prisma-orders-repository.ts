@@ -1,3 +1,4 @@
+import { Decimal } from "decimal.js";
 import type { Order } from "@/entities/order.js";
 import type { Session } from "@/entities/session.js";
 import { prisma } from "@/lib/prisma.js";
@@ -31,17 +32,26 @@ export class PrismaOrdersRepository {
 		]);
 	}
 
+	// Sums the unit price kept on each order line, so menu price changes don't
+	// affect it, using Decimal so the sum has no floating point error
 	async getSessionBalance(sessionId: string) {
-		const sessionBalance = await prisma.$queryRaw<{
-			sessionId: string;
-			balance: string;
-		}>`
-			SELECT sessionId, SUM(price * amount) AS balance FROM Orders
-			INNER JOIN OrderItems ON Orders.id = OrderItems.orderId
-			INNER JOIN MenuItems ON OrderItems.menuItemId = MenuItems.id
-  			WHERE Orders.sessionId = ${sessionId}
-		`;
+		const orderItems = await prisma.orderItems.findMany({
+			where: {
+				order: {
+					sessionId,
+				},
+			},
+			select: {
+				amount: true,
+				unitPrice: true,
+			},
+		});
 
-		return sessionBalance;
+		const balance = orderItems.reduce(
+			(sum, orderItem) => sum.add(orderItem.unitPrice.mul(orderItem.amount)),
+			new Decimal("0"),
+		);
+
+		return { sessionId, balance };
 	}
 }
