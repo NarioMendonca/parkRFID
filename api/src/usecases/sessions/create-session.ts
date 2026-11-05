@@ -21,14 +21,14 @@ export class CreateSessionUseCase {
 		const bracelet =
 			await this.prismaBraceletsRepository.findByUidRfid(braceletId);
 		if (!bracelet) {
-			throw new NotFoundError("Bracelet not registered");
+			throw new NotFoundError("Pulseira não cadastrada");
 		}
 
 		const sessionGroup =
 			await this.prismaSessionsRepository.findActiveSessionGroupById(sessionGroupId);
 		if (!sessionGroup) {
 			throw new NotFoundError(
-				"Session Group to register bracelet session not found",
+				"Grupo de sessões não encontrado ou já encerrado",
 			);
 		}
 

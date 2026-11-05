@@ -203,7 +203,7 @@ describe("POST /sessions/:braceletId/pay", () => {
 
 		expect(response.statusCode).toBe(409);
 		expect(response.json()).toEqual({
-			message: "Session has no pending balance",
+			message: "A sessão não tem saldo pendente",
 		});
 	});
 
@@ -238,7 +238,7 @@ describe("POST /sessions/:braceletId/exit", () => {
 		});
 
 		expect(response.statusCode).toBe(404);
-		expect(response.json()).toEqual({ message: "Nenhuma sessão ativa foi encontrada nesse bracelete" });
+		expect(response.json()).toEqual({ message: "Nenhuma sessão ativa foi encontrada nessa pulseira" });
 	});
 
 	it("libera a saída de sessão sem consumo e encerra a sessão", async () => {
@@ -268,7 +268,7 @@ describe("POST /sessions/:braceletId/exit", () => {
 		});
 		expect(response.statusCode).toBe(409);
 		expect(response.json()).toEqual({
-			message: "Session has a pending balance of 10.50",
+			message: "A sessão tem um saldo pendente de R$ 10,50",
 		});
 
 		const session = await findSession();

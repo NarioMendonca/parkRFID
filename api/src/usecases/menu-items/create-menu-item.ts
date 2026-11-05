@@ -17,7 +17,9 @@ export class CreateMenuItemUseCase {
 			await this.prismaMenuItemsRepository.findItemByName(name);
 
 		if (menuItemAlreadyExists) {
-			throw new AlreadyExistsError("Item already exists");
+			throw new AlreadyExistsError(
+				"Já existe um item com esse nome no cardápio",
+			);
 		}
 
 		const menuItem = MenuItem.create({

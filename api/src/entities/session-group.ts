@@ -29,7 +29,7 @@ export class SessionGroup {
 		responsiblePhoneNumber,
 	}: CreateSessionGroupInput) {
 		if (responsibleCpf.length !== 11) {
-			throw new InvalidResourceError("Invalid responsible cpf");
+			throw new InvalidResourceError("CPF do responsável inválido");
 		}
 
 		return new SessionGroup({
@@ -86,7 +86,7 @@ export class SessionGroup {
 
 	close() {
 		if (this.status === "CLOSED") {
-			throw new DomainError("Session Group already closed")
+			throw new DomainError("Grupo de sessões já encerrado")
 		}
 		this.props.status = "CLOSED"
 		this.props.checkoutDt = new Date()

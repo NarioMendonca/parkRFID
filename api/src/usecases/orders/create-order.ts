@@ -20,11 +20,13 @@ export class CreateOrderUseCase {
 	async handle({ braceletId, items }: CreateOrderInput) {
 		const bracelet = await this.braceletsRepository.findByUidRfid(braceletId);
 		if (!bracelet) {
-			throw new NotFoundError("Bracelet not registered");
+			throw new NotFoundError("Pulseira não cadastrada");
 		}
 
 		if (!bracelet.activeSession) {
-			throw new NotFoundError("Session not found in this bracelet");
+			throw new NotFoundError(
+				"Nenhuma sessão ativa foi encontrada nessa pulseira",
+			);
 		}
 
 		const itemsIds = items.map((item) => item.menuItemId);

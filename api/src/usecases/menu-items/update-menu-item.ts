@@ -16,7 +16,7 @@ export class UpdateMenuItemUseCase {
 		const menuItem = await this.prismaMenuItemsRepository.findItemById(id);
 
 		if (!menuItem) {
-			throw new NotFoundError("Item not found");
+			throw new NotFoundError("Item do cardápio não encontrado");
 		}
 
 		menuItem.update({

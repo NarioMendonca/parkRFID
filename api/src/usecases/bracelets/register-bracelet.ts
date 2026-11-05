@@ -14,7 +14,7 @@ export class RegisterBraceletUseCase {
 			await this.braceletsRepository.findByUidRfid(uid_rfid);
 
 		if (braceletAlreadyRegisted) {
-			throw new AlreadyExistsError("Bracelet already exists");
+			throw new AlreadyExistsError("Pulseira já cadastrada");
 		}
 
 		await this.braceletsRepository.register(Bracelet.register(uid_rfid));

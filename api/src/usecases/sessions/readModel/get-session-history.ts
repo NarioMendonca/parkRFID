@@ -39,7 +39,7 @@ export async function getSessionHistory(sessionId: string) {
 		},
 	});
 	if (!session) {
-		throw new NotFoundError("Session not found");
+		throw new NotFoundError("Sessão não encontrada");
 	}
 
 	const { order: orders, payment: payments, ...sessionData } = session;

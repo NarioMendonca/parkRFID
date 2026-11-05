@@ -11,7 +11,7 @@ export class DeleteMenuItemUseCase {
 		const menuItem = await this.prismaMenuItemsRepository.findItemById(itemId);
 
 		if (!menuItem) {
-			throw new NotFoundError("Menu item not found");
+			throw new NotFoundError("Item do cardápio não encontrado");
 		}
 
 		menuItem.deactivate();

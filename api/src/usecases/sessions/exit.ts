@@ -15,11 +15,11 @@ export class ExitUseCase {
 		const bracelet =
 			await this.prismaBraceletsRepository.findByUidRfid(braceletId);
 		if (!bracelet) {
-			throw new NotFoundError("Bracelete não registrado");
+			throw new NotFoundError("Pulseira não cadastrada");
 		}
 
 		if (!bracelet.activeSession) {
-			throw new NotFoundError("Nenhuma sessão ativa foi encontrada nesse bracelete")
+			throw new NotFoundError("Nenhuma sessão ativa foi encontrada nessa pulseira")
 		}
 
 		const closedSession = bracelet.exit();

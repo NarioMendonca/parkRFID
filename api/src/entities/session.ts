@@ -96,7 +96,7 @@ export class Session {
 	// Settles the whole pending balance and returns the amount paid
 	pay() {
 		if (!this.hasPendingBalance()) {
-			throw new DomainError("Session has no pending balance", 409);
+			throw new DomainError("A sessão não tem saldo pendente", 409);
 		}
 
 		const paidAmount = this.props.total;
@@ -106,7 +106,7 @@ export class Session {
 
 	close() {
 		if (this.props.status === "CLOSED") {
-			throw new DomainError("Session already closed");
+			throw new DomainError("Sessão já encerrada");
 		}
 
 		this.props.status = "CLOSED";

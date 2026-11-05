@@ -14,11 +14,14 @@ export class RemoveBraceletUseCase {
 			await this.braceletsRepository.findByUidRfid(uid_rfid);
 
 		if (!braceletExists) {
-			throw new NotFoundError("Bracelet to remove not found");
+			throw new NotFoundError("Pulseira não cadastrada");
 		}
 
 		if (braceletExists.activeSession) {
-			throw new DomainError("Bracelet to remove is active", 409);
+			throw new DomainError(
+				"A pulseira tem uma sessão ativa e não pode ser removida",
+				409,
+			);
 		}
 
 		await this.braceletsRepository.remove(uid_rfid);

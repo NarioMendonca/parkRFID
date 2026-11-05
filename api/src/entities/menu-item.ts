@@ -64,7 +64,7 @@ export class MenuItem {
 
 	private static assertValidPrice(price: Decimal) {
 		if (price.lessThanOrEqualTo("0")) {
-			throw new DomainError("Price must be greather than 0");
+			throw new DomainError("O preço deve ser maior que zero");
 		}
 	}
 }
