@@ -238,7 +238,7 @@ describe("POST /sessions/:braceletId/exit", () => {
 		});
 
 		expect(response.statusCode).toBe(404);
-		expect(response.json()).toEqual({ message: "Exit authorized" });
+		expect(response.json()).toEqual({ message: "Nenhuma sessão ativa foi encontrada nesse bracelete" });
 	});
 
 	it("libera a saída de sessão sem consumo e encerra a sessão", async () => {

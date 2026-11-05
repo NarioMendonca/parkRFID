@@ -80,6 +80,10 @@ export class SessionGroup {
 		return this.props.size
 	}
 
+	addValueToBalance(value: Decimal) {
+		this.props.balance = this.props.balance.add(value);
+	}
+
 	close() {
 		if (this.status === "CLOSED") {
 			throw new DomainError("Session Group already closed")

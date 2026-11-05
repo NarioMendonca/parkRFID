@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { Decimal } from "decimal.js";
+import { DomainError } from "@/errors/DomainError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { MenuItem } from "./menu-item.js";
 import type { Session } from "./session.js";
@@ -36,17 +37,24 @@ export class Order {
 	private constructor(private props: OrderProps) {}
 
 	static place({ session, items, menuItems, createdBy }: PlaceOrderInput) {
-		const pricesById = new Map(
-			menuItems.map((menuItem) => [menuItem.id, menuItem.price]),
+		const menuItemsById = new Map(
+			menuItems.map((menuItem) => [menuItem.id, menuItem]),
 		);
 
 		const lines = items.map((item) => {
-			const unitPrice = pricesById.get(item.menuItemId);
-			if (!unitPrice) {
-				throw new NotFoundError("Some Menu Item has invalid id");
+			const menuItem = menuItemsById.get(item.menuItemId);
+			if (!menuItem) {
+				throw new NotFoundError(`O item do menu com Id ${item.menuItemId} é inválido`);
 			}
 
-			return { ...item, unitPrice };
+			if (!menuItem.isAvaliable) {
+				throw new DomainError(
+					`'${menuItem.name}' não está disponível`,
+					409,
+				);
+			}
+
+			return { ...item, unitPrice: menuItem.price };
 		});
 
 		const orderTotalBalance = lines.reduce(

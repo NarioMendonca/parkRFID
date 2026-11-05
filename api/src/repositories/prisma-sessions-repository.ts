@@ -50,7 +50,11 @@ export class PrismaSessionsRepository {
 
 		const sessionsCount = sessionGroup._count.session
 
-		return SessionGroup.restore({ ...sessionGroup, size: sessionsCount });
+		return SessionGroup.restore({
+			...sessionGroup,
+			balance: new Decimal(sessionGroup.balance.toString()),
+			size: sessionsCount,
+		});
 	}
 
 	async createSessionGroup(sessionGroup: SessionGroup) {

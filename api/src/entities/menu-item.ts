@@ -8,9 +8,10 @@ type MenuItemProps = {
 	category: string;
 	price: Decimal;
 	isAvaliable: boolean;
+	isActive: boolean;
 };
 
-type MenuItemInput = Omit<MenuItemProps, "id">;
+type MenuItemInput = Omit<MenuItemProps, "id" | "isActive">;
 
 export class MenuItem {
 	private constructor(private props: MenuItemProps) {}
@@ -18,7 +19,7 @@ export class MenuItem {
 	static create(input: MenuItemInput) {
 		MenuItem.assertValidPrice(input.price);
 
-		return new MenuItem({ id: randomUUID(), ...input });
+		return new MenuItem({ id: randomUUID(), ...input, isActive: true });
 	}
 
 	static restore(props: MenuItemProps) {
@@ -45,10 +46,20 @@ export class MenuItem {
 		return this.props.isAvaliable;
 	}
 
+	get isActive() {
+		return this.props.isActive;
+	}
+
 	update(input: MenuItemInput) {
 		MenuItem.assertValidPrice(input.price);
 
 		this.props = { ...this.props, ...input };
+	}
+
+	// Items are never deleted, since past orders still reference them; an
+	// inactive item just leaves the menu
+	deactivate() {
+		this.props.isActive = false;
 	}
 
 	private static assertValidPrice(price: Decimal) {

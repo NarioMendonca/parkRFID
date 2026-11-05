@@ -2,8 +2,11 @@ import z from "zod";
 import { MenuItemSchema } from "./menu-item.schema.js";
 
 export const UpdateMenuItemSchema = {
-	body: z.object({
+	params: z.object({
 		id: z.string(),
+	}),
+	// The item id comes from the URL; an id sent in the body is ignored
+	body: z.object({
 		name: z.string(),
 		category: z.string(),
 		price: z.string(),

@@ -86,7 +86,7 @@ export class Session {
 	}
 
 	addValueToGroupBalance(value: Decimal) {
-		this.props.group
+		this.props.group.addValueToBalance(value);
 	}
 
 	hasPendingBalance() {
