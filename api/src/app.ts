@@ -14,8 +14,14 @@ export async function buildApp() {
 	app.setValidatorCompiler(validatorCompiler);
 	app.setSerializerCompiler(serializerCompiler);
 
+	// An empty CLIENTS_URL falls back to the default origin instead of
+	// allowing none
+	const clientsUrl = process.env.CLIENTS_URL?.split(",")
+		.map((url) => url.trim())
+		.filter(Boolean);
+
 	app.register(fastifyCors, {
-		origin: process.env.CLIENTS_URL?.split(",") ?? "http://localhost:8080",
+		origin: clientsUrl?.length ? clientsUrl : "http://localhost:8080",
 		methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
 	});
 

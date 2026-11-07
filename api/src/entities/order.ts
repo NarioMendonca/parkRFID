@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { Decimal } from "decimal.js";
+import { DomainError } from "@/errors/DomainError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { MenuItem } from "./menu-item.js";
 import type { Session } from "./session.js";
@@ -14,35 +15,46 @@ export type OrderLine = OrderItem & {
 	unitPrice: Decimal;
 };
 
+export type OrderCreatedBy = "SESSION" | "SESSION_GROUP";
+
 type OrderProps = {
 	id: string;
 	sessionId: string;
 	createdAt: Date;
 	items: OrderLine[];
 	balance: Decimal;
+	createdBy: OrderCreatedBy;
 };
 
 type PlaceOrderInput = {
 	session: Session;
 	items: OrderItem[];
 	menuItems: MenuItem[];
+	createdBy: OrderCreatedBy;
 };
 
 export class Order {
 	private constructor(private props: OrderProps) {}
 
-	static place({ session, items, menuItems }: PlaceOrderInput) {
-		const pricesById = new Map(
-			menuItems.map((menuItem) => [menuItem.id, menuItem.price]),
+	static place({ session, items, menuItems, createdBy }: PlaceOrderInput) {
+		const menuItemsById = new Map(
+			menuItems.map((menuItem) => [menuItem.id, menuItem]),
 		);
 
 		const lines = items.map((item) => {
-			const unitPrice = pricesById.get(item.menuItemId);
-			if (!unitPrice) {
-				throw new NotFoundError("Some Menu Item has invalid id");
+			const menuItem = menuItemsById.get(item.menuItemId);
+			if (!menuItem) {
+				throw new NotFoundError(`O item do menu com Id ${item.menuItemId} é inválido`);
 			}
 
-			return { ...item, unitPrice };
+			if (!menuItem.isAvaliable) {
+				throw new DomainError(
+					`'${menuItem.name}' não está disponível`,
+					409,
+				);
+			}
+
+			return { ...item, unitPrice: menuItem.price };
 		});
 
 		const orderTotalBalance = lines.reduce(
@@ -56,6 +68,7 @@ export class Order {
 			createdAt: new Date(),
 			items: lines,
 			balance: orderTotalBalance,
+			createdBy
 		});
 	}
 
@@ -77,5 +90,9 @@ export class Order {
 
 	get balance(): Decimal {
 		return this.props.balance;
+	}
+
+	get createdBy() {
+		return this.props.createdBy
 	}
 }

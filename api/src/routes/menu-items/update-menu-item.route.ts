@@ -11,10 +11,12 @@ export async function updateMenuItemRoute(app: FastifyInstance) {
 	app
 		.withTypeProvider<ZodTypeProvider>()
 		.patch("/:id", { schema: UpdateMenuItemSchema }, async (request, reply) => {
+			const { id } = request.params;
 			const params = request.body;
 
 			const menuItemRaw = await updateMenuItemUseCase.handle({
 				...params,
+				id,
 				price: new Decimal(params.price),
 			});
 

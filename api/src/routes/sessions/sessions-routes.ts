@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { createSessionRoute } from "./create-session.route.js";
-import { createSessionGroupRoute } from "./create-session-group.route.js";
+import { createSessionGroupRoute } from "./initialize-session-group.route.js";
 import { exitRoute } from "./exit.route.js";
 import { getSessionHistoryRoute } from "./get-session-history.route.js";
 import { paySessionRoute } from "./pay-session.route.js";

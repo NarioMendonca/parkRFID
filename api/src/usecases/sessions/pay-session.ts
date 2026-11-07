@@ -14,7 +14,7 @@ export class PaySessionUseCase {
 		const bracelet =
 			await this.prismaBraceletsRepository.findByUidRfid(braceletId);
 		if (!bracelet) {
-			throw new NotFoundError("Bracelet not registered");
+			throw new NotFoundError("Pulseira não cadastrada");
 		}
 
 		const { session, payment } = bracelet.pay();

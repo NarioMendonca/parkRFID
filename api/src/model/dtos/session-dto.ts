@@ -8,7 +8,7 @@ export type SessionDTO = {
 	status: Status;
 	total: Decimal;
 	sessionType: SessionType;
-	sessionsGroupId: string;
+	sessionGroupId: string;
 };
 
 export type Status = "OPEN" | "CLOSED";

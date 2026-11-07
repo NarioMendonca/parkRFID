@@ -5,32 +5,56 @@ import { SessionGroup } from "@/entities/session-group.js";
 import { prisma } from "@/lib/prisma.js";
 import type { Sessions } from "../../generated/prisma/client.js";
 
-export function toSessionEntity(session: Sessions) {
+export async function toSessionEntity(session: Sessions, group: SessionGroup) {
 	return Session.restore({
 		...session,
 		total: new Decimal(session.total.toString()),
+		group
 	});
 }
 
 export class PrismaSessionsRepository {
-	async findSessionByBraceletId(braceletId: string) {
+	async findActiveSessionByBraceletId(braceletId: string) {
 		const session = await prisma.sessions.findFirst({
 			where: {
 				braceletId,
+				status: "OPEN"
 			},
 		});
 
 		return session;
 	}
 
-	async findSessionGroupById(id: string) {
+	async findActiveSessionGroupById(id: string) {
 		const sessionGroup = await prisma.sessionsGroup.findFirst({
 			where: {
 				id,
+				status: "OPEN"
 			},
+			include: {
+				_count: {
+					select: {
+						session: {
+							where: {
+								status: 'OPEN'
+							}
+						}
+					}
+				}
+			}
 		});
 
-		return sessionGroup ? SessionGroup.restore(sessionGroup) : null;
+		if (!sessionGroup) {
+			return null;
+		}
+
+		const sessionsCount = sessionGroup._count.session
+
+		return SessionGroup.restore({
+			...sessionGroup,
+			balance: new Decimal(sessionGroup.balance.toString()),
+			size: sessionsCount,
+		});
 	}
 
 	async createSessionGroup(sessionGroup: SessionGroup) {
@@ -39,6 +63,10 @@ export class PrismaSessionsRepository {
 				id: sessionGroup.id,
 				responsibleCpf: sessionGroup.responsibleCpf,
 				responsiblePhoneNumber: sessionGroup.responsiblePhoneNumber,
+				balance: sessionGroup.balance,
+				checkoutDt: sessionGroup.checkoutDt,
+				createdAt: sessionGroup.createdAt,
+				status: sessionGroup.status
 			},
 		});
 	}
@@ -53,7 +81,7 @@ export class PrismaSessionsRepository {
 				status: session.status,
 				total: session.total,
 				sessionType: session.sessionType,
-				sessionsGroupId: session.sessionsGroupId,
+				sessionGroupId: session.group.id,
 			},
 		});
 	}
@@ -69,6 +97,19 @@ export class PrismaSessionsRepository {
 				total: session.total,
 			},
 		});
+	}
+
+	async saveGroup(sessionGroup: SessionGroup) {
+		await prisma.sessionsGroup.update({
+			where: {
+				id: sessionGroup.id,
+			},
+			data: {
+				balance: sessionGroup.balance,
+				checkoutDt: sessionGroup.checkoutDt,
+				status: sessionGroup.status
+			}
+		})
 	}
 
 	// The session balance and its payment are saved together, so a payment is
@@ -89,6 +130,7 @@ export class PrismaSessionsRepository {
 					sessionId: payment.sessionId,
 					amount: payment.amount,
 					createdAt: payment.createdAt,
+					paymentTo: payment.paymentTo,
 				},
 			}),
 		]);
