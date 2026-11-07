@@ -55,7 +55,6 @@ class SessionsRepository {
   }
 
 
-
   Future<void> exitBracelet(String braceletId) async {
     try {
       await _dio.post('/sessions/$braceletId/exit');

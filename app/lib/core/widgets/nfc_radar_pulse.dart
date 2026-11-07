@@ -56,17 +56,20 @@ class _NfcRadarPulseState extends State<NfcRadarPulse>
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return CustomPaint(
-          painter: _PulsePainter(_controller.value),
-          child: const SizedBox(
-            width: 260,
-            height: 260,
-          ),
-        );
-      },
+
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return CustomPaint(
+            painter: _PulsePainter(_controller.value),
+            child: const SizedBox(
+              width: 260,
+              height: 260,
+            ),
+          );
+        },
+      ),
     );
   }
 }

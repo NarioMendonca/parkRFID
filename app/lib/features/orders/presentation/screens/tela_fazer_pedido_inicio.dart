@@ -3,8 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:provider/provider.dart';
 import 'package:rfidparque/features/orders/presentation/screens/tela_consultar_comanda.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/app_ui.dart';
 import '../../../../core/utils/nfc_off_screen.dart';
-import '../../../bracelets/presentation/screens/nfc_radar_pulse.dart';
+import '../../../../core/widgets/nfc_radar_pulse.dart';
 import '../controllers/pedido_provider.dart';
 import 'tela_selecao_produtos.dart';
 
@@ -92,7 +94,10 @@ class _TelaFazerPedidoInicioState extends State<TelaFazerPedidoInicio> {
 
     if (!mounted) return;
 
-    context.read<PedidoProvider>().setBraceletId(cleanId);
+
+    final pedido = context.read<PedidoProvider>();
+    pedido.limparTudo();
+    pedido.setBraceletId(cleanId);
 
     setState(() {
       _scannedUid = cleanId;
@@ -161,6 +166,7 @@ class _TelaFazerPedidoInicioState extends State<TelaFazerPedidoInicio> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: const Color(0xFFF4F7FA),
       body: PopScope(
         canPop: _step == 0,
@@ -199,200 +205,118 @@ class _TelaFazerPedidoInicioState extends State<TelaFazerPedidoInicio> {
   Widget _buildTelaInicial() {
     return Container(
       key: const ValueKey('menu_inicial'),
-      color: const Color(0xFFF4F7FA),
-      child: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Row(
-                children: [
-                  if (Navigator.of(context).canPop())
-                    IconButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF1E293B), size: 20),
-                    ),
-                ],
-              ),
-            ),
-            const Spacer(flex: 1),
-
-            Image.asset(
-              'assets/images/logo.png',
-              height: 160,
-              fit: BoxFit.contain,
-            ),
-
-            const Spacer(flex: 1),
-
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        HapticFeedback.lightImpact();
-                        _startNfcSession();
-                      },
-                      child: Container(
-                        height: 180,
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF3880C4),
-                          borderRadius: BorderRadius.circular(24),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF3880C4).withOpacity(0.3),
-                              blurRadius: 15,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              width: 42,
-                              height: 42,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.25),
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              child: const Icon(Icons.add_rounded, color: Colors.white, size: 26),
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Text(
-                                  'Fazer\npedido',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    height: 1.2,
-                                  ),
-                                ),
-                                SizedBox(height: 6),
-                                Text(
-                                  'ler pulseira e lançar\nitens',
-                                  style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 11,
-                                    height: 1.2,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+      color: AppTheme.background,
+      child: Column(
+        children: [
+          AppHeader(
+            titleSize: 19,
+            title: 'Comanda e pedidos',
+            subtitle: 'Escolha como deseja continuar',
+            onBack: Navigator.of(context).canPop()
+                ? () {
+                    HapticFeedback.lightImpact();
+                    Navigator.of(context).pop();
+                  }
+                : null,
+          ),
+          Expanded(
+            child: SafeArea(
+              top: false,
+              child: ScrollFill(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      child: ActionCard(
+                        title: 'Fazer pedido',
+                        subtitle: 'Ler a pulseira e lançar os itens na comanda.',
+                        icon: Icons.add_shopping_cart_rounded,
+                        tone: AppTone.primary,
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          _startNfcSession();
+                        },
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: ActionCard(
+                        title: 'Consultar comanda',
+                        subtitle: 'Ver o consumo registrado na pulseira.',
+                        icon: Icons.receipt_long_rounded,
+                        tone: AppTone.accent,
+                        filled: false,
+                        onTap: () {
+                          HapticFeedback.lightImpact();
 
-
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        HapticFeedback.lightImpact();
-
-
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const TelaConsultarComanda(),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        height: 180,
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(24),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.06),
-                              blurRadius: 15,
-                              offset: const Offset(0, 8),
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const TelaConsultarComanda(),
                             ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              width: 42,
-                              height: 42,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFFF4E5),
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              child: const Icon(Icons.adjust_rounded, color: Color(0xFFE29933), size: 24),
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Text(
-                                  'Consultar\ncomanda',
-                                  style: TextStyle(
-                                    color: Color(0xFF1E293B),
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    height: 1.2,
-                                  ),
-                                ),
-                                SizedBox(height: 6),
-                                Text(
-                                  'ver consumo da\npulseira',
-                                  style: TextStyle(
-                                    color: Color(0xFF94A3B8),
-                                    fontSize: 11,
-                                    height: 1.2,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                          );
+                        },
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-            const Spacer(flex: 3),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildTelaLeitura() {
-    return Container(
+    return ScanBackdrop(
       key: const ValueKey('leitura'),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF2B7BB9), Color(0xFF102847)],
-        ),
-      ),
       child: SafeArea(
         child: Column(
           children: [
-            _buildHeader(),
-            const Spacer(),
-            const NfcRadarPulse(),
-            const SizedBox(height: 40),
-            const Text(
-              'Aproxime a pulseira',
-              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500),
+            ScanTopBar(
+              title: 'Leitura da pulseira',
+              subtitle: 'Novo pedido',
+              onBack: () {
+          HapticFeedback.lightImpact();
+          _voltarParaMenu();
+        },
             ),
             const Spacer(),
+            const NfcRadarPulse(),
+            const SizedBox(height: 28),
+            Text(
+              'APROXIME A PULSEIRA',
+              style: AppTheme.display(size: 22, color: Colors.white),
+            ),
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40),
+              child: Text(
+                'Aproxime a tag física da parte de trás do aparelho',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.72),
+                  fontSize: 15,
+                  height: 1.45,
+                ),
+              ),
+            ),
+            const Spacer(),
+            BottomActionBar(
+              dark: true,
+              primary: AppButton(
+                label: 'Cancelar',
+                icon: Icons.close_rounded,
+                outlined: true,
+                onDark: true,
+                onPressed: () {
+          HapticFeedback.lightImpact();
+          _voltarParaMenu();
+        },
+              ),
+            ),
           ],
         ),
       ),
@@ -402,121 +326,83 @@ class _TelaFazerPedidoInicioState extends State<TelaFazerPedidoInicio> {
   Widget _buildTelaResultado() {
     return Container(
       key: const ValueKey('resultado'),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF2B7BB9), Color(0xFF102847)],
-        ),
-      ),
-      child: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(),
-            const SizedBox(height: 30),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Container(
-                padding: const EdgeInsets.all(20.0),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 20, offset: const Offset(0, 10)),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(color: const Color(0xFFE8F5E9), borderRadius: BorderRadius.circular(20)),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          Icon(Icons.check_circle_rounded, color: Color(0xFF2E7D32), size: 16),
-                          SizedBox(width: 6),
-                          Text('Pulseira identificada', style: TextStyle(color: Color(0xFF2E7D32), fontSize: 13, fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Row(
+      color: AppTheme.background,
+      child: Column(
+        children: [
+          AppHeader(
+            titleSize: 19,
+            title: 'Leitura da pulseira',
+            subtitle: 'Novo pedido',
+            onBack: () {
+          HapticFeedback.lightImpact();
+          _voltarParaMenu();
+        },
+          ),
+          Expanded(
+            child: ScrollFill(
+              padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const StatePanel(
+                    icon: Icons.check_rounded,
+                    tone: AppTone.success,
+                    title: 'Pulseira identificada',
+                    message: 'Tudo pronto para escolher os itens e lançar na comanda.',
+                  ),
+                  const SizedBox(height: 28),
+                  AppCard(
+                    padding: const EdgeInsets.all(20),
+                    child: Row(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: const BoxDecoration(color: Color(0xFFE3F2FD), shape: BoxShape.circle),
-                          child: const Icon(Icons.nfc_rounded, color: Color(0xFF1E88E5), size: 28),
-                        ),
+                        const IconBadge(icon: Icons.nfc_rounded, tone: AppTone.info, size: 58),
                         const SizedBox(width: 16),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(_scannedUid ?? 'N/A', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
-                            const SizedBox(height: 2),
-                            const Text('ID da Pulseira', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                          ],
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SectionLabel('ID da pulseira'),
+                              const SizedBox(height: 4),
+                              Text(
+                                _scannedUid ?? 'N/A',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.5,
+                                  color: AppTheme.textDark,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-            ),
-            const Spacer(),
-            Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFF9800),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    elevation: 0,
                   ),
-                  onPressed: () {
-                    HapticFeedback.lightImpact();
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const TelaSelecaoProdutos(),
-                      ),
-                    );
-                  },
-                  child: const Text(
-                    'Escolher os itens do pedido',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-                ),
+                ],
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: _voltarParaMenu,
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle),
-              child: const Icon(Icons.chevron_left, color: Colors.white, size: 20),
             ),
           ),
-          const SizedBox(width: 8),
-          const Text(
-            'Leitura da pulseira',
-            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+          BottomActionBar(
+            primary: AppButton(
+              label: 'Escolher os itens do pedido',
+              icon: Icons.restaurant_menu_rounded,
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const TelaSelecaoProdutos(),
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),
     );
   }
 }
+

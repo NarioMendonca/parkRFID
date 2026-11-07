@@ -1,43 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../../../core/theme/app_theme.dart';
+import '../../../../../core/widgets/app_ui.dart';
 
 import '../../../../../core/api/api_client.dart';
-
-class MaskedTextInputFormatter extends TextInputFormatter {
-  final String mask;
-  final String separator;
-
-  MaskedTextInputFormatter({required this.mask, required this.separator});
-
-  @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
-    if (newValue.text.isNotEmpty) {
-      if (newValue.text.length > oldValue.text.length) {
-        if (newValue.text.length > mask.length) return oldValue;
-      }
-    }
-
-    var text = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
-    String result = '';
-    int currentIndex = 0;
-
-    for (int i = 0; i < mask.length; i++) {
-      if (currentIndex >= text.length) break;
-      if (mask[i] == '0') {
-        result += text[currentIndex];
-        currentIndex++;
-      } else {
-        result += mask[i];
-      }
-    }
-
-    return TextEditingValue(
-      text: result,
-      selection: TextSelection.collapsed(offset: result.length),
-    );
-  }
-}
+import '../../../../../core/utils/masked_text_input_formatter.dart';
 
 class TelaCheckinDesktop extends StatefulWidget {
   const TelaCheckinDesktop({super.key});
@@ -148,11 +116,11 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
           children: [
             Container(
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(16)),
-              child: const Icon(Icons.error_outline_rounded, color: Colors.red, size: 28),
+              decoration: BoxDecoration(color: AppTheme.dangerBg, borderRadius: BorderRadius.circular(16)),
+              child: const Icon(Icons.error_outline_rounded, color: AppTheme.danger, size: 28),
             ),
             const SizedBox(width: 16),
-            const Text('Atenção', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 26)),
+            Text('Atenção', style: AppTheme.display(size: 26)),
           ],
         ),
         content: SizedBox(
@@ -165,7 +133,7 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
             height: 52,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
+                backgroundColor: AppTheme.danger,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 elevation: 0,
@@ -231,28 +199,12 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+      backgroundColor: AppTheme.background,
       body: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [colorScheme.primary, colorScheme.primaryContainer],
-              ),
-            ),
-            child: Row(
-              children: [
-                Image.asset('assets/images/logo.png', height: 44, fit: BoxFit.contain),
-                const SizedBox(width: 18),
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Check-in', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                  ],
-                ),
-              ],
-            ),
+          DesktopHeader(
+            title: 'Check-in',
+            subtitle: 'Atendimento de entrada no balcão.',
           ),
           Expanded(
             child: Padding(
@@ -265,7 +217,7 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
                       decoration: BoxDecoration(
                         color: colorScheme.surface,
                         borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: colorScheme.outlineVariant),
+                        border: Border.all(color: AppTheme.border),
                       ),
                       padding: const EdgeInsets.all(48),
                       child: Column(
@@ -293,9 +245,9 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                     decoration: BoxDecoration(
-                                      color: colorScheme.surfaceContainerHighest.withOpacity(0.4),
+                                      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
                                       borderRadius: BorderRadius.circular(16),
-                                      border: Border.all(color: colorScheme.outlineVariant.withOpacity(0.5)),
+                                      border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
@@ -348,7 +300,7 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
                       decoration: BoxDecoration(
                         color: colorScheme.surface,
                         borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: colorScheme.outlineVariant),
+                        border: Border.all(color: AppTheme.border),
                       ),
                       child: _buildSidebar(colorScheme),
                     ),
@@ -402,7 +354,7 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('RESPONSÁVEL', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
+              const Text('RESPONSÁVEL', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
               const SizedBox(height: 14),
               _InfoRow(icon: Icons.person_outline, label: 'CPF', value: _cpfController.text.isEmpty ? '—' : _cpfController.text),
               const SizedBox(height: 14),
@@ -420,7 +372,7 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('PULSEIRAS VINCULADAS', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
+                    const Text('PULSEIRAS VINCULADAS', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                       decoration: BoxDecoration(
@@ -439,9 +391,9 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
                       padding: const EdgeInsets.all(28),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: colorScheme.outlineVariant),
+                        border: Border.all(color: AppTheme.border),
                       ),
-                      child: const Text('Nenhuma pulseira vinculada ainda', style: TextStyle(color: Colors.grey, fontSize: 15), textAlign: TextAlign.center),
+                      child: const Text('Nenhuma pulseira vinculada ainda', style: TextStyle(color: AppTheme.textMuted, fontSize: 15), textAlign: TextAlign.center),
                     ),
                   )
                       : ListView.builder(
@@ -460,10 +412,10 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
                               margin: const EdgeInsets.only(bottom: 12),
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: isHovered ? Colors.red : colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                                color: isHovered ? AppTheme.danger : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color: isHovered ? Colors.red.shade700 : Colors.transparent,
+                                  color: isHovered ? AppTheme.danger : Colors.transparent,
                                   width: 1.5,
                                 ),
                               ),
@@ -472,7 +424,7 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
                                   Container(
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
-                                      color: isHovered ? Colors.white.withOpacity(0.2) : colorScheme.surface,
+                                      color: isHovered ? Colors.white.withValues(alpha: 0.2) : colorScheme.surface,
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Icon(
@@ -500,7 +452,7 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
                                           style: TextStyle(
                                             fontFamily: 'monospace',
                                             fontSize: 13,
-                                            color: isHovered ? Colors.white70 : Colors.grey,
+                                            color: isHovered ? Colors.white70 : AppTheme.textMuted,
                                           ),
                                         ),
                                       ],
@@ -510,7 +462,7 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
                                     IconButton(
                                       icon: Icon(
                                         Icons.delete_outline,
-                                        color: isHovered ? Colors.white : Colors.redAccent,
+                                        color: isHovered ? Colors.white : AppTheme.danger,
                                         size: 22,
                                       ),
                                       onPressed: () => setState(() => _bands.removeAt(index)),
@@ -530,7 +482,7 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
                     width: double.infinity,
                     height: 58,
                     child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                      style: ElevatedButton.styleFrom(backgroundColor: AppTheme.success),
                       onPressed: _isLoading ? null : _finalizeCheckin,
                       child: _isLoading
                           ? const CircularProgressIndicator(color: Colors.white)
@@ -554,9 +506,9 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
         children: [
           Image.asset('assets/images/logo.png', height: 95, fit: BoxFit.contain),
           const SizedBox(height: 28),
-          const Text('Bem-vindo ao balcão', style: TextStyle(fontSize: 38, fontWeight: FontWeight.bold)),
+          Text('Bem-vindo ao balcão', style: AppTheme.display(size: 38)),
           const SizedBox(height: 14),
-          const Text('Inicie um atendimento para cadastrar o responsável e vincular as pulseiras do grupo.', textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, fontSize: 18)),
+          const Text('Inicie um atendimento para cadastrar o responsável e vincular as pulseiras do grupo.', textAlign: TextAlign.center, style: TextStyle(color: AppTheme.textMuted, fontSize: 18)),
           const SizedBox(height: 48),
           MouseRegion(
             onEnter: (_) => setState(() => _isWelcomeHovered = true),
@@ -572,7 +524,7 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
                   boxShadow: _isWelcomeHovered
                       ? [
                     BoxShadow(
-                      color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
                       blurRadius: 16,
                       offset: const Offset(0, 6),
                     )
@@ -583,17 +535,17 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
                   children: [
                     Container(
                       padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle),
+                      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(28)),
                       child: const Icon(Icons.add, color: Colors.white, size: 32),
                     ),
                     const SizedBox(width: 24),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Novo Check-in', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
-                          SizedBox(height: 6),
-                          Text('Identificar responsável → ler pulseiras → finalizar', style: TextStyle(color: Colors.white70, fontSize: 15)),
+                          Text('Novo Check-in', style: AppTheme.display(size: 22, color: Colors.white)),
+                          const SizedBox(height: 6),
+                          const Text('Identificar responsável → ler pulseiras → finalizar', style: TextStyle(color: Colors.white70, fontSize: 15)),
                         ],
                       ),
                     ),
@@ -615,13 +567,13 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text('PASSO 1 DE 3', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.blue)),
+          const Text('PASSO 1 DE 3', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.primary)),
           const SizedBox(height: 10),
-          const Text('Identificação do responsável', style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold)),
+          Text('Identificação do responsável', style: AppTheme.display(size: 34)),
           const SizedBox(height: 8),
-          const Text('Informe o CPF e o telefone/WhatsApp do responsável pelo grupo.', style: TextStyle(color: Colors.grey, fontSize: 17)),
+          const Text('Informe o CPF e o telefone/WhatsApp do responsável pelo grupo.', style: TextStyle(color: AppTheme.textMuted, fontSize: 17)),
           const SizedBox(height: 36),
-          const Text('CPF', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
+          const Text('CPF', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
           const SizedBox(height: 10),
           TextField(
             controller: _cpfController,
@@ -636,7 +588,7 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: 28),
-          const Text('TELEFONE / WHATSAPP', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
+          const Text('TELEFONE / WHATSAPP', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.textMuted)),
           const SizedBox(height: 10),
           TextField(
             controller: _phoneController,
@@ -677,22 +629,22 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text('PASSO 2 DE 3', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.blue)),
+          const Text('PASSO 2 DE 3', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.primary)),
           const SizedBox(height: 10),
-          const Text('Aproxime a pulseira', style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold)),
+          Text('Aproxime a pulseira', style: AppTheme.display(size: 34)),
           const SizedBox(height: 8),
-          const Text('O leitor USB/NFC está ativo e aguardando a leitura da tag.', style: TextStyle(color: Colors.grey, fontSize: 17)),
+          const Text('O leitor USB/NFC está ativo e aguardando a leitura da tag.', style: TextStyle(color: AppTheme.textMuted, fontSize: 17)),
           const SizedBox(height: 44),
           Container(
             padding: const EdgeInsets.all(38),
             decoration: BoxDecoration(
-              color: Colors.blue.shade50,
-              shape: BoxShape.circle,
+              color: AppTheme.infoBg,
+              borderRadius: BorderRadius.circular(28),
             ),
-            child: const Icon(Icons.nfc, size: 76, color: Colors.blue),
+            child: const Icon(Icons.nfc, size: 76, color: AppTheme.primary),
           ),
           const SizedBox(height: 24),
-          const Text('● Aguardando leitura...', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 17)),
+          const Text('● Aguardando leitura...', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primary, fontSize: 17)),
           const SizedBox(height: 44),
           Row(
             children: [
@@ -742,9 +694,9 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text('PASSO 3 DE 3', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.blue)),
+          const Text('PASSO 3 DE 3', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.primary)),
           const SizedBox(height: 10),
-          const Text('Tipo de pulseira', style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold)),
+          Text('Tipo de pulseira', style: AppTheme.display(size: 34)),
           const SizedBox(height: 8),
           Text('Tag lida: ${_currentUid ?? ""}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           const SizedBox(height: 36),
@@ -756,21 +708,21 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
                   child: Container(
                     padding: const EdgeInsets.all(28),
                     decoration: BoxDecoration(
-                      color: _selectedType == 'adulto' ? Colors.blue.shade50 : Theme.of(context).colorScheme.surface,
+                      color: _selectedType == 'adulto' ? AppTheme.infoBg : Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: _selectedType == 'adulto' ? Colors.blue : Theme.of(context).colorScheme.outlineVariant,
+                        color: _selectedType == 'adulto' ? AppTheme.primary : Theme.of(context).colorScheme.outlineVariant,
                         width: _selectedType == 'adulto' ? 2 : 1,
                       ),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: const [
-                        Icon(Icons.person, size: 38, color: Colors.blue),
+                        Icon(Icons.person, size: 38, color: AppTheme.primary),
                         SizedBox(height: 20),
                         Text('Normal / Adulto', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                         SizedBox(height: 6),
-                        Text('Acesso completo às atrações', style: TextStyle(color: Colors.grey, fontSize: 14)),
+                        Text('Acesso completo às atrações', style: TextStyle(color: AppTheme.textMuted, fontSize: 14)),
                       ],
                     ),
                   ),
@@ -783,21 +735,21 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
                   child: Container(
                     padding: const EdgeInsets.all(28),
                     decoration: BoxDecoration(
-                      color: _selectedType == 'kid' ? Colors.blue.shade50 : Theme.of(context).colorScheme.surface,
+                      color: _selectedType == 'kid' ? AppTheme.infoBg : Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: _selectedType == 'kid' ? Colors.blue : Theme.of(context).colorScheme.outlineVariant,
+                        color: _selectedType == 'kid' ? AppTheme.primary : Theme.of(context).colorScheme.outlineVariant,
                         width: _selectedType == 'kid' ? 2 : 1,
                       ),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: const [
-                        Icon(Icons.child_care, size: 38, color: Colors.blue),
+                        Icon(Icons.child_care, size: 38, color: AppTheme.primary),
                         SizedBox(height: 20),
                         Text('Kid / Infantil', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                         SizedBox(height: 6),
-                        Text('Atrações e áreas infantis', style: TextStyle(color: Colors.grey, fontSize: 14)),
+                        Text('Atrações e áreas infantis', style: TextStyle(color: AppTheme.textMuted, fontSize: 14)),
                       ],
                     ),
                   ),
@@ -853,18 +805,18 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
         children: [
           Container(
             padding: const EdgeInsets.all(24),
-            decoration: const BoxDecoration(color: Color(0xFFE8F5E9), shape: BoxShape.circle),
-            child: const Icon(Icons.check_circle, color: Colors.green, size: 64),
+            decoration: BoxDecoration(color: AppTheme.successBg, borderRadius: BorderRadius.circular(28)),
+            child: const Icon(Icons.check_circle, color: AppTheme.success, size: 64),
           ),
           const SizedBox(height: 28),
-          const Text('Check-in concluído!', style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold)),
+          Text('Check-in concluído!', style: AppTheme.display(size: 36)),
           const SizedBox(height: 10),
-          const Text('Pulseiras ativadas. Bom divertimento!', style: TextStyle(color: Colors.grey, fontSize: 18)),
+          const Text('Pulseiras ativadas. Bom divertimento!', style: TextStyle(color: AppTheme.textMuted, fontSize: 18)),
           const SizedBox(height: 36),
           Container(
             padding: const EdgeInsets.all(28),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+              color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Column(
@@ -914,7 +866,7 @@ class _InfoRow extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+            Text(label, style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
             Text(value, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
           ],
         ),

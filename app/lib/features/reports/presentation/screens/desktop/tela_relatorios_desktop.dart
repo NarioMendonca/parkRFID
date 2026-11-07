@@ -1,14 +1,23 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../../core/api/api_client.dart';
+import '../../../../../core/theme/app_theme.dart';
+import '../../../../../core/widgets/app_ui.dart';
+import '../../../../../core/widgets/skeleton.dart';
 import '../../../data/models/session_report_model.dart';
 import '../../../data/models/consumption_report_model.dart';
 import '../../../data/repositories/reports_repositories.dart';
 
 
 class TelaRelatoriosDesktop extends StatefulWidget {
-  const TelaRelatoriosDesktop({super.key});
+  const TelaRelatoriosDesktop({super.key, this.refreshSignal});
+
+
+  final ValueListenable<int>? refreshSignal;
 
   @override
   State<TelaRelatoriosDesktop> createState() => _TelaRelatoriosDesktopState();
@@ -19,313 +28,311 @@ class _TelaRelatoriosDesktopState extends State<TelaRelatoriosDesktop> {
 
   SessionReportModel? _sessionReport;
   ConsumptionReportModel? _consumptionReport;
+
   bool _isLoading = true;
+
+
+  bool _isFetching = false;
   bool _isApiOffline = false;
 
   @override
   void initState() {
     super.initState();
     _reportsRepository = ReportsRepository(ApiClient.dio);
+    widget.refreshSignal?.addListener(_fetchAllReports);
     _fetchAllReports();
   }
 
+  @override
+  void dispose() {
+    widget.refreshSignal?.removeListener(_fetchAllReports);
+    super.dispose();
+  }
+
   Future<void> _fetchAllReports() async {
-    setState(() {
-      _isLoading = true;
-      _isApiOffline = false;
-    });
+    if (_isFetching) return;
+    _isFetching = true;
+    if (mounted) setState(() {});
 
     try {
-      final sessionRes = await _reportsRepository.fetchSessionReport();
-      final consumptionRes = await _reportsRepository.fetchConsumptionToday();
+      final (sessionRes, consumptionRes) = await (
+        _reportsRepository.fetchSessionReport(),
+        _reportsRepository.fetchConsumptionToday(),
+      ).wait;
 
-      if (mounted) {
-        setState(() {
-          _sessionReport = sessionRes;
-          _consumptionReport = consumptionRes;
-          _isLoading = false;
-          _isApiOffline = false;
-        });
-      }
+      if (!mounted) return;
+      setState(() {
+        _sessionReport = sessionRes;
+        _consumptionReport = consumptionRes;
+        _isApiOffline = false;
+      });
+    } on ParallelWaitError<dynamic, dynamic> catch (_) {
+      if (mounted) setState(() => _isApiOffline = true);
     } on DioException catch (_) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _isApiOffline = true;
-        });
-      }
+      if (mounted) setState(() => _isApiOffline = true);
     } catch (_) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _isApiOffline = true;
-        });
-      }
+      if (mounted) setState(() => _isApiOffline = true);
+    } finally {
+      _isFetching = false;
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
-      backgroundColor: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+      backgroundColor: AppTheme.background,
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Header Superior
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [colorScheme.primary, colorScheme.primaryContainer],
-              ),
-            ),
-            child: Row(
-              children: [
-                Image.asset('assets/images/logo.png', height: 42, fit: BoxFit.contain),
-                const SizedBox(width: 16),
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Dashboard Analítico e Métricas', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                  ],
-                ),
-              ],
+          DesktopHeader(
+            title: 'Dashboard',
+            subtitle: 'Fluxo de visitantes e faturamento em tempo real.',
+            trailing: HeaderButton(
+              label: _isFetching && !_isLoading ? 'Atualizando...' : 'Atualizar dados',
+              icon: Icons.refresh_rounded,
+              onPressed: _isFetching
+                  ? null
+                  : () {
+                      HapticFeedback.lightImpact();
+                      _fetchAllReports();
+                    },
             ),
           ),
-
-          // Conteúdo do Dashboard
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(28.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: colorScheme.surface,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: colorScheme.outlineVariant),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
-                      blurRadius: 24,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                padding: const EdgeInsets.all(36),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Cabeçalho Interno
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: _isLoading
+                ? const _DashboardSkeleton()
+                : SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(36, 8, 36, 36),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        Row(
                           children: [
-                            Text(
-                              'Visão Geral do Parque',
-                              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+                            Expanded(
+                              child: _KpiCard(
+                                title: 'Sessões ativas',
+                                value: '${_sessionReport?.activeSessions ?? 0}',
+                                subtitle: 'Visitantes no parque agora',
+                                icon: Icons.people_alt_rounded,
+                                color: AppTheme.primary,
+                                highlight: true,
+                              ),
                             ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Monitoramento em tempo real de fluxo de visitantes e faturamento.',
-                              style: TextStyle(fontSize: 16, color: colorScheme.onSurfaceVariant),
+                            const SizedBox(width: 20),
+                            Expanded(
+                              child: _KpiCard(
+                                title: 'Check-ins hoje',
+                                value: '${_sessionReport?.sessionsCreatedToday ?? 0}',
+                                subtitle: 'Entradas registradas',
+                                icon: Icons.today_rounded,
+                                color: AppTheme.accentInk,
+                              ),
+                            ),
+                            const SizedBox(width: 20),
+                            Expanded(
+                              child: _KpiCard(
+                                title: 'Faturamento hoje',
+                                value: 'R\$ ${_consumptionReport?.total ?? "0.00"}',
+                                subtitle: _consumptionReport?.date.isNotEmpty == true
+                                    ? 'Data: ${_consumptionReport!.date}'
+                                    : 'Atualizado hoje',
+                                icon: Icons.payments_rounded,
+                                color: AppTheme.success,
+                              ),
                             ),
                           ],
                         ),
-                        ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colorScheme.primary,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            elevation: 0,
-                          ),
-                          onPressed: () {
-                            HapticFeedback.lightImpact();
-                            _fetchAllReports();
-                          },
-                          icon: const Icon(Icons.refresh_rounded, size: 22),
-                          label: const Text('Atualizar Dados', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 24),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: AppCard(
+                                padding: const EdgeInsets.all(28),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _CardTitle(title: 'Atividade do parque', icon: Icons.bar_chart_rounded),
+                                    const SizedBox(height: 24),
+                                    _MetricStatRow(
+                                      label: 'Sessões ativas no momento',
+                                      value: '${_sessionReport?.activeSessions ?? 0}',
+                                      icon: Icons.directions_walk_rounded,
+                                      color: AppTheme.primary,
+                                    ),
+                                    const Divider(height: 32),
+                                    _MetricStatRow(
+                                      label: 'Novas sessões hoje',
+                                      value: '${_sessionReport?.sessionsCreatedToday ?? 0}',
+                                      icon: Icons.add_business_rounded,
+                                      color: AppTheme.accentInk,
+                                    ),
+                                    const Divider(height: 32),
+                                    _MetricStatRow(
+                                      label: 'Consumo total do dia',
+                                      value: 'R\$ ${_consumptionReport?.total ?? "0.00"}',
+                                      icon: Icons.account_balance_wallet_rounded,
+                                      color: AppTheme.success,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 24),
+                            Expanded(
+                              flex: 2,
+                              child: AppCard(
+                                padding: const EdgeInsets.all(28),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _CardTitle(
+                                      title: 'Status de conexão',
+                                      icon: _isApiOffline
+                                          ? Icons.error_outline_rounded
+                                          : Icons.check_circle_outline_rounded,
+                                      color: _isApiOffline ? AppTheme.danger : AppTheme.success,
+                                    ),
+                                    const SizedBox(height: 24),
+                                    _StatusRow(
+                                      title: 'Servidor Fastify',
+                                      status: _isApiOffline ? 'Offline' : 'Online',
+                                      isOk: !_isApiOffline,
+                                    ),
+                                    const Divider(height: 32),
+                                    _StatusRow(
+                                      title: 'Banco de Dados (Prisma)',
+                                      status: _isApiOffline ? 'Sem Resposta' : 'Conectado',
+                                      isOk: !_isApiOffline,
+                                    ),
+                                    const Divider(height: 32),
+                                    _StatusRow(
+                                      title: 'Serviço de Relatórios',
+                                      status: _isApiOffline ? 'Falha de Carga' : 'Sincronizado',
+                                      isOk: !_isApiOffline,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                    const SizedBox(height: 28),
-
-                    // Conteúdo
-                    Expanded(
-                      child: _isLoading
-                          ? const Center(child: CircularProgressIndicator())
-                          : SingleChildScrollView(
-                        physics: const BouncingScrollPhysics(),
-                        child: Column(
-                          children: [
-                            // Linha de KPIs com dados reais da API
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _KpiCard(
-                                    title: 'Sessões Ativas',
-                                    value: '${_sessionReport?.activeSessions ?? 0}',
-                                    subtitle: 'Visitantes no parque agora',
-                                    icon: Icons.people_alt_rounded,
-                                    color: Colors.blue,
-                                  ),
-                                ),
-                                const SizedBox(width: 20),
-                                Expanded(
-                                  child: _KpiCard(
-                                    title: 'Check-ins Hoje',
-                                    value: '${_sessionReport?.sessionsCreatedToday ?? 0}',
-                                    subtitle: 'Total de entradas registradas',
-                                    icon: Icons.today_rounded, 
-                                    color: Colors.orange,
-                                  ),
-                                ),
-                                const SizedBox(width: 20),
-                                Expanded(
-                                  child: _KpiCard(
-                                    title: 'Faturamento Hoje',
-                                    value: 'R\$ ${_consumptionReport?.total ?? "0.00"}',
-                                    subtitle: _consumptionReport?.date.isNotEmpty == true
-                                        ? 'Data: ${_consumptionReport!.date}'
-                                        : 'Atualizado hoje',
-                                    icon: Icons.payments_rounded,
-                                    color: Colors.green,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 24),
-
-                            // Bloco do Dashboard
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Coluna Esquerda: Métricas com os valores da API
-                                Expanded(
-                                  flex: 3,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(28),
-                                    decoration: BoxDecoration(
-                                      color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(color: colorScheme.outlineVariant),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            const Text(
-                                              'Fluxo de Atividade do Parque',
-                                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                                            ),
-                                            Icon(Icons.bar_chart_rounded, color: colorScheme.primary, size: 28),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 8),
-                                        const Text(
-                                          'Totais consolidados retornado pelos endpoints de relatório.',
-                                          style: TextStyle(color: Colors.grey, fontSize: 14),
-                                        ),
-                                        const SizedBox(height: 32),
-
-                                        _MetricStatRow(
-                                          label: 'Sessões Ativas no Momento',
-                                          value: '${_sessionReport?.activeSessions ?? 0}',
-                                          icon: Icons.directions_walk_rounded,
-                                          color: Colors.blue,
-                                        ),
-                                        const Divider(height: 28),
-                                        _MetricStatRow(
-                                          label: 'Novas Sessões Criadas Hoje',
-                                          value: '${_sessionReport?.sessionsCreatedToday ?? 0}',
-                                          icon: Icons.add_business_rounded,
-                                          color: Colors.orange,
-                                        ),
-                                        const Divider(height: 28),
-                                        _MetricStatRow(
-                                          label: 'Total de Consumo do Dia',
-                                          value: 'R\$ ${_consumptionReport?.total ?? "0.00"}',
-                                          icon: Icons.account_balance_wallet_rounded,
-                                          color: Colors.green,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 24),
-
-                                // Coluna Direita: Status Real de Conexão e API
-                                Expanded(
-                                  flex: 2,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(28),
-                                    decoration: BoxDecoration(
-                                      color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(color: colorScheme.outlineVariant),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            const Text(
-                                              'Status de Conexão',
-                                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                                            ),
-                                            Icon(
-                                              _isApiOffline ? Icons.error_outline_rounded : Icons.check_circle_outline_rounded,
-                                              color: _isApiOffline ? Colors.red : Colors.green,
-                                              size: 28,
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 8),
-                                        const Text(
-                                          'Conectividade verificada em tempo real com a API.',
-                                          style: TextStyle(color: Colors.grey, fontSize: 14),
-                                        ),
-                                        const SizedBox(height: 28),
-
-                                        _StatusRow(
-                                          title: 'Servidor Fastify',
-                                          status: _isApiOffline ? 'Offline' : 'Online',
-                                          isOk: !_isApiOffline,
-                                        ),
-                                        const Divider(height: 32),
-                                        _StatusRow(
-                                          title: 'Banco de Dados (Prisma)',
-                                          status: _isApiOffline ? 'Sem Resposta' : 'Conectado',
-                                          isOk: !_isApiOffline,
-                                        ),
-                                        const Divider(height: 32),
-                                        _StatusRow(
-                                          title: 'Serviço de Relatórios',
-                                          status: _isApiOffline ? 'Falha de Carga' : 'Sincronizado',
-                                          isOk: !_isApiOffline,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+                  ),
           ),
         ],
       ),
+    );
+  }
+}
+
+
+class _DashboardSkeleton extends StatelessWidget {
+  const _DashboardSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    Widget kpi() => Container(
+          height: 168,
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: AppTheme.border),
+          ),
+          child: const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  SkeletonBox(width: 48, height: 48, radius: 16),
+                  SizedBox(width: 14),
+                  SkeletonBox(width: 120, height: 14),
+                ],
+              ),
+              Spacer(),
+              SkeletonBox(width: 90, height: 34),
+              SizedBox(height: 8),
+              SkeletonBox(width: 160, height: 12),
+            ],
+          ),
+        );
+
+    Widget row() => const Row(
+          children: [
+            SkeletonBox(width: 46, height: 46, radius: 14),
+            SizedBox(width: 16),
+            Expanded(child: Align(alignment: Alignment.centerLeft, child: SkeletonBox(width: 200))),
+            SkeletonBox(width: 70, height: 22),
+          ],
+        );
+
+    Widget card(int flex) => Expanded(
+          flex: flex,
+          child: AppCard(
+            shadow: false,
+            padding: const EdgeInsets.all(28),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SkeletonBox(width: 180, height: 22),
+                const SizedBox(height: 24),
+                row(),
+                const Divider(height: 32),
+                row(),
+                const Divider(height: 32),
+                row(),
+              ],
+            ),
+          ),
+        );
+
+    return SkeletonPulse(
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(36, 8, 36, 36),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(child: kpi()),
+                const SizedBox(width: 20),
+                Expanded(child: kpi()),
+                const SizedBox(width: 20),
+                Expanded(child: kpi()),
+              ],
+            ),
+            const SizedBox(height: 24),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [card(3), const SizedBox(width: 24), card(2)],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CardTitle extends StatelessWidget {
+  const _CardTitle({required this.title, required this.icon, this.color = AppTheme.primary});
+
+  final String title;
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(child: Text(title, style: AppTheme.display(size: 22, color: AppTheme.textDark))),
+        Icon(icon, color: color, size: 28),
+      ],
     );
   }
 }
@@ -336,6 +343,7 @@ class _KpiCard extends StatelessWidget {
   final String subtitle;
   final IconData icon;
   final Color color;
+  final bool highlight;
 
   const _KpiCard({
     required this.title,
@@ -343,40 +351,55 @@ class _KpiCard extends StatelessWidget {
     required this.subtitle,
     required this.icon,
     required this.color,
+    this.highlight = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final fg = highlight ? Colors.white : AppTheme.textDark;
+    final muted = highlight ? Colors.white.withValues(alpha: 0.85) : AppTheme.textMuted;
 
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colorScheme.outlineVariant),
+        color: highlight ? null : Colors.white,
+        gradient: highlight
+            ? const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [AppTheme.primary, AppTheme.navy],
+              )
+            : null,
+        borderRadius: BorderRadius.circular(24),
+        border: highlight ? null : Border.all(color: AppTheme.border),
+        boxShadow: highlight ? AppTheme.coloredShadow(AppTheme.primary) : AppTheme.softShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colorScheme.onSurfaceVariant)),
               Container(
-                padding: const EdgeInsets.all(10),
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  color: highlight ? AppTheme.accent : color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(icon, color: color, size: 24),
+                child: Icon(icon, color: highlight ? AppTheme.onAccent : color, size: 26),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: muted),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Text(value, style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: colorScheme.onSurface)),
-          const SizedBox(height: 6),
-          Text(subtitle, style: const TextStyle(fontSize: 13, color: Colors.grey)),
+          const SizedBox(height: 18),
+          Text(value, style: AppTheme.display(size: 36, color: fg)),
+          Text(subtitle, style: TextStyle(fontSize: 13.5, color: muted)),
         ],
       ),
     );
@@ -401,18 +424,19 @@ class _MetricStatRow extends StatelessWidget {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(12),
+          width: 46,
+          height: 46,
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
+            color: color.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(14),
           ),
           child: Icon(icon, color: color, size: 24),
         ),
         const SizedBox(width: 16),
         Expanded(
-          child: Text(label, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+          child: Text(label, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
         ),
-        Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color)),
+        Text(value, style: AppTheme.display(size: 22, color: color)),
       ],
     );
   }
@@ -432,22 +456,14 @@ class _StatusRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-        Row(
-          children: [
-            Container(
-              width: 10,
-              height: 10,
-              decoration: BoxDecoration(
-                color: isOk ? Colors.green : Colors.red,
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(status, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: isOk ? Colors.green.shade700 : Colors.red)),
-          ],
+        Expanded(
+          child: Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+        ),
+        StatusPill(
+          label: status,
+          icon: isOk ? Icons.check_circle_rounded : Icons.error_rounded,
+          tone: isOk ? AppTone.success : AppTone.danger,
         ),
       ],
     );

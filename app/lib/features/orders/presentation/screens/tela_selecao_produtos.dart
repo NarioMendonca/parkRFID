@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/api/api_client.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../controllers/pedido_provider.dart';
 import 'tela_atribuir_mesa.dart';
 
@@ -17,7 +18,7 @@ class _TelaSelecaoProdutosState extends State<TelaSelecaoProdutos> {
   List<dynamic> _produtosMenu = [];
   String? _erro;
 
-  // Categorias para corresponder ao design do protótipo
+
   final List<String> _categorias = ['Bebidas', 'Porções', 'Lanches', 'Sobremesas'];
   String _categoriaSelecionada = 'Bebidas';
 
@@ -147,7 +148,7 @@ class _TelaSelecaoProdutosState extends State<TelaSelecaoProdutos> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFF3880C4) : Colors.transparent,
+                color: isSelected ? AppTheme.primary : Colors.transparent,
                 borderRadius: BorderRadius.circular(20),
                 border: isSelected
                     ? null
@@ -266,7 +267,7 @@ class _TelaSelecaoProdutosState extends State<TelaSelecaoProdutos> {
           width: 38,
           height: 38,
           decoration: BoxDecoration(
-            color: const Color(0xFF2C4B7E),
+            color: AppTheme.primary,
             borderRadius: BorderRadius.circular(12),
           ),
           child: const Icon(Icons.add_rounded, color: Colors.white, size: 24),
@@ -315,7 +316,7 @@ class _TelaSelecaoProdutosState extends State<TelaSelecaoProdutos> {
               width: 38,
               height: 38,
               decoration: BoxDecoration(
-                color: const Color(0xFF2C4B7E),
+                color: AppTheme.primary,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(Icons.add_rounded, color: Colors.white, size: 24),
@@ -331,11 +332,11 @@ class _TelaSelecaoProdutosState extends State<TelaSelecaoProdutos> {
       margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFF3880C4),
+        color: AppTheme.primary,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF3880C4).withOpacity(0.3),
+            color: AppTheme.primary.withOpacity(0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -378,8 +379,8 @@ class _TelaSelecaoProdutosState extends State<TelaSelecaoProdutos> {
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFF5A623),
-              foregroundColor: Colors.black,
+              backgroundColor: AppTheme.accent,
+              foregroundColor: AppTheme.onAccent,
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               shape: RoundedRectangleBorder(

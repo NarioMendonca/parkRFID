@@ -1,4 +1,5 @@
   import 'package:dio/dio.dart';
+  import 'package:flutter/foundation.dart' show kDebugMode;
 
   class ApiClient {
     static final Dio dio = _initDio();
@@ -18,12 +19,15 @@
         ),
       );
 
-      dio.interceptors.add(
-        LogInterceptor(
-          requestBody: true,
-          responseBody: true,
-        ),
-      );
+
+      if (kDebugMode) {
+        dio.interceptors.add(
+          LogInterceptor(
+            requestBody: false,
+            responseBody: false,
+          ),
+        );
+      }
 
       return dio;
     }

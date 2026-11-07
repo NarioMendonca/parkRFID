@@ -43,7 +43,7 @@ class _TelaAtribuirMesaState extends State<TelaAtribuirMesa> {
   Widget build(BuildContext context) {
     final pedidoProvider = Provider.of<PedidoProvider>(context);
 
-    // Cálculo do total de itens no carrinho
+
     final totalItens = pedidoProvider.itensCarrinho.fold<int>(
       0,
           (sum, item) => sum + (item['amount'] as int? ?? 0),
@@ -70,7 +70,7 @@ class _TelaAtribuirMesaState extends State<TelaAtribuirMesa> {
               ),
               const SizedBox(height: 16),
 
-              // Display da Mesa Selecionada
+
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 24),
@@ -93,7 +93,7 @@ class _TelaAtribuirMesaState extends State<TelaAtribuirMesa> {
 
               const Spacer(),
 
-              // Teclado Numérico
+
               GridView.count(
                 crossAxisCount: 3,
                 shrinkWrap: true,
@@ -111,7 +111,7 @@ class _TelaAtribuirMesaState extends State<TelaAtribuirMesa> {
 
               const SizedBox(height: 24),
 
-              // Botão de Ação Inferior
+
               SizedBox(
                 width: double.infinity,
                 height: 56,

@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../../../core/theme/app_theme.dart';
+import '../../../../../core/widgets/app_ui.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../../core/utils/nfc_off_screen.dart';
@@ -149,44 +151,19 @@ class _TelaGestaoPulseirasDesktopContentState extends State<_TelaGestaoPulseiras
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+      backgroundColor: AppTheme.background,
       body: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [colorScheme.primary, colorScheme.primaryContainer],
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Image.asset('assets/images/logo.png', height: 42, fit: BoxFit.contain),
-                    const SizedBox(width: 16),
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Gestão de Pulseiras', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                  ],
-                ),
-                if (_step > 1)
-                  OutlinedButton.icon(
+          DesktopHeader(
+            title: 'Gestão de Pulseiras',
+            subtitle: 'Cadastro e exclusão pelo leitor USB.',
+            trailing: _step > 1
+                ? HeaderButton(
+                    label: 'Reiniciar',
+                    icon: Icons.refresh_rounded,
                     onPressed: _resetFlow,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      side: const BorderSide(color: Colors.white54),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    icon: const Icon(Icons.refresh, size: 18),
-                    label: const Text('Reiniciar', style: TextStyle(fontWeight: FontWeight.bold)),
-                  ),
-              ],
-            ),
+                  )
+                : null,
           ),
           Expanded(
             child: Center(
@@ -198,10 +175,10 @@ class _TelaGestaoPulseirasDesktopContentState extends State<_TelaGestaoPulseiras
                   decoration: BoxDecoration(
                     color: colorScheme.surface,
                     borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: colorScheme.outlineVariant),
+                    border: Border.all(color: AppTheme.border),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.06),
+                        color: Colors.black.withValues(alpha: 0.06),
                         blurRadius: 30,
                         offset: const Offset(0, 10),
                       ),
@@ -242,9 +219,9 @@ class _TelaGestaoPulseirasDesktopContentState extends State<_TelaGestaoPulseiras
       children: [
         Image.asset('assets/images/logo.png', height: 85, fit: BoxFit.contain),
         const SizedBox(height: 24),
-        const Text('Cadastro de Pulseiras', style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold)),
+        Text('Cadastro de Pulseiras', style: AppTheme.display(size: 36)),
         const SizedBox(height: 10),
-        const Text('Selecione uma opção abaixo para iniciar a operação via leitor USB.', style: TextStyle(color: Colors.grey, fontSize: 16)),
+        const Text('Selecione uma opção abaixo para iniciar a operação via leitor USB.', style: TextStyle(color: AppTheme.textMuted, fontSize: 16)),
         const SizedBox(height: 50),
         Row(
           children: [
@@ -266,13 +243,13 @@ class _TelaGestaoPulseirasDesktopContentState extends State<_TelaGestaoPulseiras
                     children: [
                       Container(
                         padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(14)),
+                        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(14)),
                         child: const Icon(Icons.add, color: Colors.white, size: 32),
                       ),
                       const SizedBox(height: 40),
-                      const Text('Cadastrar', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                      Text('Cadastrar', style: AppTheme.display(size: 24, color: Colors.white)),
                       const SizedBox(height: 6),
-                      Text('Nova pulseira no sistema', style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14)),
+                      Text('Nova pulseira no sistema', style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14)),
                     ],
                   ),
                 ),
@@ -291,7 +268,7 @@ class _TelaGestaoPulseirasDesktopContentState extends State<_TelaGestaoPulseiras
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFEBEE),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.redAccent.withOpacity(0.3), width: 1.5),
+                    border: Border.all(color: AppTheme.danger.withValues(alpha: 0.3), width: 1.5),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -299,12 +276,12 @@ class _TelaGestaoPulseirasDesktopContentState extends State<_TelaGestaoPulseiras
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
-                        child: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 32),
+                        child: const Icon(Icons.delete_outline, color: AppTheme.danger, size: 32),
                       ),
                       const SizedBox(height: 40),
-                      const Text('Apagar', style: TextStyle(color: Colors.redAccent, fontSize: 24, fontWeight: FontWeight.bold)),
+                      Text('Apagar', style: AppTheme.display(size: 24, color: AppTheme.danger)),
                       const SizedBox(height: 6),
-                      const Text('Remover pulseira do sistema', style: TextStyle(color: Colors.redAccent, fontSize: 14)),
+                      const Text('Remover pulseira do sistema', style: TextStyle(color: AppTheme.danger, fontSize: 14)),
                     ],
                   ),
                 ),
@@ -317,7 +294,7 @@ class _TelaGestaoPulseirasDesktopContentState extends State<_TelaGestaoPulseiras
   }
 
   Widget _buildStepReader(ColorScheme colorScheme) {
-    final activeColor = _isDeleteMode ? Colors.redAccent : Colors.blue;
+    final activeColor = _isDeleteMode ? AppTheme.danger : AppTheme.primary;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -338,8 +315,8 @@ class _TelaGestaoPulseirasDesktopContentState extends State<_TelaGestaoPulseiras
                       width: 120,
                       height: 120,
                       decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: activeColor.withOpacity(_radarOpacityAnim.value),
+                        borderRadius: BorderRadius.circular(28),
+                        color: activeColor.withValues(alpha: _radarOpacityAnim.value),
                       ),
                     ),
                   );
@@ -349,8 +326,8 @@ class _TelaGestaoPulseirasDesktopContentState extends State<_TelaGestaoPulseiras
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: activeColor.withOpacity(0.12),
-                  shape: BoxShape.circle,
+                  color: activeColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(28),
                 ),
                 child: Icon(Icons.nfc, size: 68, color: activeColor),
               ),
@@ -360,11 +337,11 @@ class _TelaGestaoPulseirasDesktopContentState extends State<_TelaGestaoPulseiras
         const SizedBox(height: 32),
         Text(
           _isDeleteMode ? 'Aproxime para apagar' : 'Aproxime a pulseira no leitor',
-          style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+          style: AppTheme.display(size: 30),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 10),
-        const Text('O leitor está ativo. A leitura é feita de forma instantânea ao aproximar a tag.', style: TextStyle(color: Colors.grey, fontSize: 16), textAlign: TextAlign.center),
+        const Text('O leitor está ativo. A leitura é feita de forma instantânea ao aproximar a tag.', style: TextStyle(color: AppTheme.textMuted, fontSize: 16), textAlign: TextAlign.center),
         const SizedBox(height: 36),
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 450),
@@ -410,7 +387,7 @@ class _TelaGestaoPulseirasDesktopContentState extends State<_TelaGestaoPulseiras
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
-            color: _localErrorMessage != null ? const Color(0xFFFFEBEE) : (_isDeleteMode ? const Color(0xFFFFEBEE) : const Color(0xFFE8F5E9)),
+            color: _localErrorMessage != null ? const Color(0xFFFFEBEE) : (_isDeleteMode ? const Color(0xFFFFEBEE) : AppTheme.successBg),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Row(
@@ -437,16 +414,16 @@ class _TelaGestaoPulseirasDesktopContentState extends State<_TelaGestaoPulseiras
         Container(
           padding: const EdgeInsets.all(28.0),
           decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: colorScheme.outlineVariant),
+            border: Border.all(color: AppTheme.border),
           ),
           child: Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(color: colorScheme.surface, shape: BoxShape.circle),
-                child: const Icon(Icons.nfc_rounded, color: Colors.blue, size: 32),
+                decoration: BoxDecoration(color: colorScheme.surface, borderRadius: BorderRadius.circular(28)),
+                child: const Icon(Icons.nfc_rounded, color: AppTheme.primary, size: 32),
               ),
               const SizedBox(width: 20),
               Column(
@@ -454,12 +431,12 @@ class _TelaGestaoPulseirasDesktopContentState extends State<_TelaGestaoPulseiras
                 children: [
                   const Text(
                     'TAG IDENTIFICADA',
-                    style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 12, color: AppTheme.textMuted, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     _scannedUid ?? 'N/A',
-                    style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
+                    style: AppTheme.display(size: 26),
                   ),
                 ],
               ),
@@ -470,7 +447,7 @@ class _TelaGestaoPulseirasDesktopContentState extends State<_TelaGestaoPulseiras
           const SizedBox(height: 16),
           Text(
             _localErrorMessage!,
-            style: const TextStyle(color: Colors.red, fontSize: 14, fontWeight: FontWeight.w600),
+            style: const TextStyle(color: AppTheme.danger, fontSize: 14, fontWeight: FontWeight.w600),
           ),
         ],
         const SizedBox(height: 44),
@@ -480,7 +457,7 @@ class _TelaGestaoPulseirasDesktopContentState extends State<_TelaGestaoPulseiras
           child: _isDeleteMode
               ? OutlinedButton(
             style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Colors.redAccent, width: 2),
+              side: const BorderSide(color: AppTheme.danger, width: 2),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             ),
             onPressed: controller.isLoading
@@ -498,12 +475,12 @@ class _TelaGestaoPulseirasDesktopContentState extends State<_TelaGestaoPulseiras
               }
             },
             child: controller.isLoading
-                ? const CircularProgressIndicator(color: Colors.redAccent)
-                : const Text('Confirmar exclusão', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.redAccent)),
+                ? const CircularProgressIndicator(color: AppTheme.danger)
+                : const Text('Confirmar exclusão', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.danger)),
           )
               : ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFF9800),
+              backgroundColor: AppTheme.accent,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               elevation: 0,
             ),

@@ -5,18 +5,35 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b071f4c1-c575-4a50-8857-0bf54aee85d8" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/app/lib/features/bracelets/presentation/screens/desktop/gestao_pulseiras_desktop.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/lib/features/home/presentation/screens/desktop/desktop_navigation.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/lib/features/menu/presentation/screens/desktop/menu_desktop.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/lib/features/reports/data/models/consumption_report_model.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/lib/features/reports/data/models/session_report_model.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/lib/features/reports/data/repositories/reports_repositories.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/lib/features/reports/presentation/screens/desktop/tela_relatorios_desktop.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/lib/features/sessions/presentation/screens/desktop/checkin_desktop.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/deviceManager.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/parkrfid.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/parkrfid.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/core/api/api_client.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/core/api/api_client.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/core/theme/app_theme.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/core/theme/app_theme.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/core/utils/nfc_off_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/core/utils/nfc_off_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/features/bracelets/presentation/controllers/bracelets_controller.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/features/bracelets/presentation/controllers/bracelets_controller.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/features/bracelets/presentation/screens/desktop/gestao_pulseiras_desktop.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/features/bracelets/presentation/screens/desktop/gestao_pulseiras_desktop.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/features/bracelets/presentation/screens/nfc_radar_pulse.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/features/bracelets/presentation/screens/tela_gestao_pulseiras.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/features/bracelets/presentation/screens/tela_gestao_pulseiras.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/features/home/presentation/screens/desktop/desktop_navigation.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/features/home/presentation/screens/desktop/desktop_navigation.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/features/home/presentation/screens/main_navigation_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/features/home/presentation/screens/main_navigation_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/features/menu/presentation/screens/desktop/menu_desktop.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/features/menu/presentation/screens/desktop/menu_desktop.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/features/menu/presentation/screens/tela_menu.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/features/menu/presentation/screens/tela_menu.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/features/orders/data/models/comanda_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/features/orders/data/models/comanda_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/features/orders/data/services/comanda_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/features/orders/data/services/comanda_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/features/orders/presentation/screens/tela_atribuir_mesa.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/features/orders/presentation/screens/tela_atribuir_mesa.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/features/orders/presentation/screens/tela_consultar_comanda.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/features/orders/presentation/screens/tela_consultar_comanda.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/features/orders/presentation/screens/tela_fazer_pedido_inicio.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/features/orders/presentation/screens/tela_fazer_pedido_inicio.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/features/orders/presentation/screens/tela_revisar_pedido.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/features/orders/presentation/screens/tela_revisar_pedido.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/features/orders/presentation/screens/tela_selecao_produtos.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/features/orders/presentation/screens/tela_selecao_produtos.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/features/reports/presentation/screens/desktop/tela_relatorios_desktop.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/features/reports/presentation/screens/desktop/tela_relatorios_desktop.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/lib/features/sessions/data/repositories/sessions_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/features/sessions/data/repositories/sessions_repository.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/features/sessions/presentation/screens/desktop/checkin_desktop.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/features/sessions/presentation/screens/desktop/checkin_desktop.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/features/sessions/presentation/screens/tela_checkin.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/features/sessions/presentation/screens/tela_checkin.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/main.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/app/pubspec.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -65,12 +82,13 @@
     &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
     &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
     &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;feat/orders-table-number-printer-queue&quot;,
     &quot;io.flutter.reload.alreadyRun&quot;: &quot;true&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;dart.settings&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;flutter.settings&quot;,
     &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;
   }
 }</component>
@@ -95,5 +113,8 @@
       <updated>1791071452358</updated>
     </task>
     <servers />
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.fileTypeFactory" implementationName=".env" />
   </component>
 </project>

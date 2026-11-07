@@ -1,7 +1,54 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../../../core/theme/app_theme.dart';
+import '../../../../../core/widgets/app_ui.dart';
 import '../../../../../core/api/api_client.dart';
+import '../../../../../core/widgets/skeleton.dart';
+
+/// Esqueleto da grade do cardápio, com o mesmo tamanho dos cartões reais.
+class _MenuGridSkeleton extends StatelessWidget {
+  const _MenuGridSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return SkeletonPulse(
+      child: GridView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: 380,
+          mainAxisExtent: 160,
+          crossAxisSpacing: 22,
+          mainAxisSpacing: 22,
+        ),
+        itemCount: 9,
+        itemBuilder: (context, index) => Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: AppTheme.inputBg.withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppTheme.border),
+          ),
+          child: const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  SkeletonBox(width: 70, height: 12),
+                  SkeletonBox(width: 46, height: 26, radius: 13),
+                ],
+              ),
+              SkeletonBox(width: 190, height: 20),
+              SkeletonBox(width: 90, height: 18),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class TelaMenuDesktop extends StatefulWidget {
   const TelaMenuDesktop({super.key});
@@ -36,13 +83,13 @@ class _TelaMenuDesktopState extends State<TelaMenuDesktop> {
       }
 
       final response = await _dio.get(path);
-      if (response.data is List) {
-        setState(() {
-          _menuItems = response.data;
-          _isLoading = false;
-          _isApiOffline = false;
-        });
-      }
+      // A resposta pode chegar depois que a tela saiu de cena.
+      if (!mounted) return;
+      setState(() {
+        if (response.data is List) _menuItems = response.data;
+        _isLoading = false;
+        _isApiOffline = false;
+      });
     } on DioException catch (_) {
       if (mounted) {
         setState(() {
@@ -103,7 +150,7 @@ class _TelaMenuDesktopState extends State<TelaMenuDesktop> {
                   actionsPadding: const EdgeInsets.fromLTRB(36, 0, 36, 36),
                   title: Text(
                     isEditing ? 'Editar Item' : 'Novo Item do Cardápio',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 26),
+                    style: AppTheme.display(size: 26),
                   ),
                   content: SizedBox(
                     width: 680,
@@ -124,7 +171,7 @@ class _TelaMenuDesktopState extends State<TelaMenuDesktop> {
                               hintText: 'Ex: Refrigerante Lata',
                               errorText: hasErrorName ? 'Campo obrigatório' : null,
                               filled: true,
-                              fillColor: colorScheme.surfaceContainerHighest.withOpacity(0.4),
+                              fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(16),
                                 borderSide: BorderSide.none,
@@ -143,7 +190,7 @@ class _TelaMenuDesktopState extends State<TelaMenuDesktop> {
                               hintText: 'Ex: Bebidas, Comidas',
                               errorText: hasErrorCategory ? 'Campo obrigatório' : null,
                               filled: true,
-                              fillColor: colorScheme.surfaceContainerHighest.withOpacity(0.4),
+                              fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(16),
                                 borderSide: BorderSide.none,
@@ -162,7 +209,7 @@ class _TelaMenuDesktopState extends State<TelaMenuDesktop> {
                               hintText: '0,00',
                               errorText: hasErrorPrice ? 'Informe um preço válido' : null,
                               filled: true,
-                              fillColor: colorScheme.surfaceContainerHighest.withOpacity(0.4),
+                              fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(16),
                                 borderSide: BorderSide.none,
@@ -173,7 +220,7 @@ class _TelaMenuDesktopState extends State<TelaMenuDesktop> {
                           const SizedBox(height: 24),
                           Container(
                             decoration: BoxDecoration(
-                              color: colorScheme.surfaceContainerHighest.withOpacity(0.2),
+                              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: SwitchListTile(
@@ -203,7 +250,7 @@ class _TelaMenuDesktopState extends State<TelaMenuDesktop> {
                             Navigator.pop(context);
                             _confirmDelete(itemToEdit['id']);
                           },
-                          child: const Text('Excluir', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 16)),
+                          child: const Text('Excluir', style: TextStyle(color: AppTheme.danger, fontWeight: FontWeight.bold, fontSize: 16)),
                         )
                             : const SizedBox.shrink(),
                         Row(
@@ -270,7 +317,7 @@ class _TelaMenuDesktopState extends State<TelaMenuDesktop> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Excluir Item', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        title: Text('Excluir Item', style: AppTheme.display(size: 24)),
         content: const Text('Tem certeza de que deseja remover este item do cardápio?', style: TextStyle(fontSize: 17)),
         actions: [
           TextButton(
@@ -281,7 +328,7 @@ class _TelaMenuDesktopState extends State<TelaMenuDesktop> {
             child: const Text('Cancelar', style: TextStyle(fontSize: 16)),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16)),
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.danger, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16)),
             onPressed: () {
               HapticFeedback.lightImpact();
               Navigator.pop(context);
@@ -320,6 +367,7 @@ class _TelaMenuDesktopState extends State<TelaMenuDesktop> {
 
       await _fetchMenu();
     } on DioException catch (e) {
+      if (!mounted) return;
       setState(() => _isLoading = false);
       _showErrorDialog(e.response?.data?['message'] ?? 'Erro ao conectar com a API ao salvar item.');
     }
@@ -340,6 +388,7 @@ class _TelaMenuDesktopState extends State<TelaMenuDesktop> {
         'isAvaliable': newValue,
       });
     } on DioException catch (e) {
+      if (!mounted) return;
       setState(() {
         item['isAvaliable'] = !newValue;
       });
@@ -353,6 +402,7 @@ class _TelaMenuDesktopState extends State<TelaMenuDesktop> {
       await _dio.delete('/menu/$id', data: {});
       await _fetchMenu();
     } on DioException catch (e) {
+      if (!mounted) return;
       setState(() => _isLoading = false);
       _showErrorDialog(e.response?.data?['message'] ?? 'Erro ao deletar item.');
     }
@@ -363,7 +413,7 @@ class _TelaMenuDesktopState extends State<TelaMenuDesktop> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Atenção', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        title: Text('Atenção', style: AppTheme.display(size: 24)),
         content: Text(message, style: const TextStyle(fontSize: 17)),
         actions: [
           TextButton(
@@ -384,28 +434,19 @@ class _TelaMenuDesktopState extends State<TelaMenuDesktop> {
     final categories = ['Todas', 'Bebidas', 'Comidas', 'Sobremesas'];
 
     return Scaffold(
-      backgroundColor: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+      backgroundColor: AppTheme.background,
       body: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [colorScheme.primary, colorScheme.primaryContainer],
-              ),
-            ),
-            child: Row(
-              children: [
-                Image.asset('assets/images/logo.png', height: 42, fit: BoxFit.contain),
-                const SizedBox(width: 16),
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Gerenciamento de Cardápio', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-
-                  ],
-                ),
-              ],
+          DesktopHeader(
+            title: 'Cardápio',
+            subtitle: 'Itens disponíveis para os garçons e clientes.',
+            trailing: HeaderButton(
+              label: 'Novo item',
+              icon: Icons.add_rounded,
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                _showItemFormDialog();
+              },
             ),
           ),
           Expanded(
@@ -415,10 +456,10 @@ class _TelaMenuDesktopState extends State<TelaMenuDesktop> {
                 decoration: BoxDecoration(
                   color: colorScheme.surface,
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: colorScheme.outlineVariant),
+                  border: Border.all(color: AppTheme.border),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
+                      color: Colors.black.withValues(alpha: 0.04),
                       blurRadius: 24,
                       offset: const Offset(0, 8),
                     ),
@@ -428,41 +469,6 @@ class _TelaMenuDesktopState extends State<TelaMenuDesktop> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Cardápio',
-                              style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Gerencie os itens disponíveis para os garçons e clientes.',
-                              style: TextStyle(fontSize: 17, color: colorScheme.onSurfaceVariant),
-                            ),
-                          ],
-                        ),
-                        ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colorScheme.primary,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 20),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            elevation: 0,
-                          ),
-                          onPressed: () {
-                            HapticFeedback.lightImpact();
-                            _showItemFormDialog();
-                          },
-                          icon: const Icon(Icons.add, size: 24),
-                          label: const Text('Novo Item', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 28),
                     SizedBox(
                       height: 56,
                       child: ListView.builder(
@@ -483,7 +489,7 @@ class _TelaMenuDesktopState extends State<TelaMenuDesktop> {
                                 color: isSelected ? Colors.white : colorScheme.onSurface,
                                 fontWeight: FontWeight.bold,
                               ),
-                              backgroundColor: colorScheme.surfaceContainerHighest.withOpacity(0.4),
+                              backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(24),
                                 side: BorderSide(color: isSelected ? Colors.transparent : colorScheme.outlineVariant),
@@ -498,10 +504,18 @@ class _TelaMenuDesktopState extends State<TelaMenuDesktop> {
                         },
                       ),
                     ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 25),
+                    // Barra fina quando já há itens na tela (troca de categoria,
+                    // salvar, excluir): mantém a grade visível em vez de piscar.
+                    SizedBox(
+                      height: 3,
+                      child: _isLoading && _menuItems.isNotEmpty
+                          ? const LinearProgressIndicator(borderRadius: BorderRadius.all(Radius.circular(2)))
+                          : null,
+                    ),
                     Expanded(
-                      child: _isLoading
-                          ? const Center(child: CircularProgressIndicator())
+                      child: _isLoading && _menuItems.isEmpty
+                          ? const _MenuGridSkeleton()
                           : _isApiOffline
                           ? Center(
                         child: Column(
@@ -510,7 +524,7 @@ class _TelaMenuDesktopState extends State<TelaMenuDesktop> {
                             Icon(
                               Icons.wifi_off_rounded,
                               size: 64,
-                              color: colorScheme.onSurfaceVariant.withOpacity(0.5),
+                              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                             ),
                             const SizedBox(height: 16),
                             Text(
@@ -534,7 +548,7 @@ class _TelaMenuDesktopState extends State<TelaMenuDesktop> {
                         ),
                       )
                           : _menuItems.isEmpty
-                          ? const Center(child: Text('Nenhum item encontrado.', style: TextStyle(fontSize: 18, color: Colors.grey)))
+                          ? const Center(child: Text('Nenhum item encontrado.', style: TextStyle(fontSize: 18, color: AppTheme.textMuted)))
                           : GridView.builder(
                         gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                           maxCrossAxisExtent: 380,
@@ -557,9 +571,9 @@ class _TelaMenuDesktopState extends State<TelaMenuDesktop> {
                             child: Container(
                               padding: const EdgeInsets.all(24),
                               decoration: BoxDecoration(
-                                color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                                color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                                 borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: colorScheme.outlineVariant),
+                                border: Border.all(color: AppTheme.border),
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -592,7 +606,7 @@ class _TelaMenuDesktopState extends State<TelaMenuDesktop> {
                                     style: TextStyle(
                                       fontSize: 19,
                                       fontWeight: FontWeight.bold,
-                                      color: isAvailable ? colorScheme.onSurface : Colors.grey,
+                                      color: isAvailable ? colorScheme.onSurface : AppTheme.textMuted,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,

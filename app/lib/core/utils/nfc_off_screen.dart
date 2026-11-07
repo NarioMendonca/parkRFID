@@ -22,20 +22,23 @@ class TelaNfcDesativado extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFFC53030), Color(0xFF4A1515)], // Tons vermelhos sóbrios
+            colors: [Color(0xFFC53030), Color(0xFF4A1515)],
           ),
         ),
         child: SafeArea(
           child: Column(
             children: [
-              // Header dinâmico com botão de voltar opcional
+
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                 child: Row(
                   children: [
                     if (onVoltar != null)
                       IconButton(
-                        onPressed: onVoltar,
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          onVoltar!();
+                        },
                         icon: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(

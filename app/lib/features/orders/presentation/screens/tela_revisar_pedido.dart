@@ -1,8 +1,12 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/api/api_client.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../data/models/pedido_concluido_model.dart';
 import '../controllers/pedido_provider.dart';
+import 'tela_pedido_concluido.dart';
 
 class TelaRevisarPedido extends StatefulWidget {
   const TelaRevisarPedido({super.key});
@@ -14,7 +18,7 @@ class TelaRevisarPedido extends StatefulWidget {
 class _TelaRevisarPedidoState extends State<TelaRevisarPedido> {
   bool _enviando = false;
 
-  Future<void> _enviarPedido(BuildContext context, PedidoProvider provider) async {
+  Future<void> _enviarPedido(PedidoProvider provider) async {
     setState(() => _enviando = true);
 
     try {
@@ -32,26 +36,46 @@ class _TelaRevisarPedidoState extends State<TelaRevisarPedido> {
       final response = await ApiClient.dio.post('/orders/', data: payload);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        // Guarda o que foi enviado antes de limpar o carrinho.
+        final concluido = PedidoConcluidoModel(
+          braceletId: provider.braceletId ?? '',
+          mesa: provider.mesa,
+          criadoEm: DateTime.now(),
+          itens: provider.itensCarrinho
+              .map((item) => PedidoConcluidoItem(
+                    name: '${item['name'] ?? ''}',
+                    amount: (item['amount'] as num?)?.toInt() ?? 1,
+                    unitPrice: double.tryParse('${item['price']}') ?? 0,
+                  ))
+              .toList(),
+        );
         provider.limparTudo();
 
         if (!mounted) return;
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Pedido realizado com sucesso!'),
-              backgroundColor: Colors.green
+        Navigator.of(context).pushAndRemoveUntil(
+          PageRouteBuilder(
+            transitionDuration: const Duration(milliseconds: 250),
+            pageBuilder: (_, _, _) => TelaPedidoConcluido(pedido: concluido),
+            transitionsBuilder: (_, animation, _, child) =>
+                FadeTransition(opacity: animation, child: child),
           ),
+          (route) => route.isFirst,
         );
-
-        Navigator.of(context).popUntil((route) => route.isFirst);
       }
     } catch (e) {
       if (!mounted) return;
+      String mensagem = 'Não foi possível enviar o pedido. Tente novamente.';
+      if (e is DioException) {
+        final data = e.response?.data;
+        if (data is Map && data['message'] != null) {
+          mensagem = data['message'].toString();
+        } else if (e.response == null) {
+          mensagem = 'Sem conexão com o servidor. Verifique a rede e tente novamente.';
+        }
+      }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text('Erro ao enviar pedido: $e'),
-            backgroundColor: Colors.red
-        ),
+        SnackBar(content: Text(mensagem), backgroundColor: AppTheme.danger),
       );
     } finally {
       if (mounted) {
@@ -160,7 +184,7 @@ class _TelaRevisarPedidoState extends State<TelaRevisarPedido> {
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: const Color(0xFF60A5FA),
+              color: AppTheme.primary,
               borderRadius: BorderRadius.circular(16),
             ),
             child: const Center(
@@ -317,7 +341,7 @@ class _TelaRevisarPedidoState extends State<TelaRevisarPedido> {
                       '$qtd',
                       style: const TextStyle(
                         fontWeight: FontWeight.w900,
-                        color: Color(0xFF3880C4),
+                        color: AppTheme.primary,
                         fontSize: 14,
                       ),
                     ),
@@ -407,12 +431,12 @@ class _TelaRevisarPedidoState extends State<TelaRevisarPedido> {
               ? null
               : () {
             HapticFeedback.heavyImpact();
-            _enviarPedido(context, provider);
+            _enviarPedido(provider);
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFF5A623),
+            backgroundColor: AppTheme.accent,
             disabledBackgroundColor: const Color(0xFFCBD5E1),
-            foregroundColor: Colors.black,
+            foregroundColor: AppTheme.onAccent,
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
@@ -422,7 +446,7 @@ class _TelaRevisarPedidoState extends State<TelaRevisarPedido> {
               ? const SizedBox(
             width: 24,
             height: 24,
-            child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2),
+            child: CircularProgressIndicator(color: AppTheme.onAccent, strokeWidth: 2),
           )
               : const Text(
             'Confirmar e lançar na comanda',
