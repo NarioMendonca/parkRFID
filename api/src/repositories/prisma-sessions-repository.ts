@@ -57,8 +57,20 @@ export class PrismaSessionsRepository {
 		});
 	}
 
+	async findActiveSessionGroupByCpf(cpf: string) {
+		const sessionGroup = await prisma.sessionsGroup.findFirst({
+			where: {
+				responsibleCpf: cpf,
+				status: "OPEN"
+			}
+		})
+
+		return sessionGroup
+	}
+
+
 	async createSessionGroup(sessionGroup: SessionGroup) {
-		await prisma.sessionsGroup.create({
+		const createdSessionGroup = await prisma.sessionsGroup.create({
 			data: {
 				id: sessionGroup.id,
 				responsibleCpf: sessionGroup.responsibleCpf,
@@ -69,6 +81,16 @@ export class PrismaSessionsRepository {
 				status: sessionGroup.status
 			},
 		});
+
+		return createdSessionGroup
+	}
+
+	async deleteSessionGroup(id: string) {
+		await prisma.sessionsGroup.delete({
+			where: {
+				id
+			}
+		})
 	}
 
 	async createSession(session: Session) {

@@ -10,7 +10,7 @@ const yesterday = () => new Date(Date.now() - 24 * 60 * 60 * 1000);
 describe("GET /reports/sessions", () => {
 	it("conta as sessões ativas agora e as criadas hoje", async () => {
 		// Aberta hoje: ativa e criada hoje
-		await checkin(app, "PULSEIRA-A");
+		await checkin(app, "PULSEIRA-A", "01234567890");
 
 		// Aberta e encerrada hoje: só criada hoje
 		await checkin(app, "PULSEIRA-B");

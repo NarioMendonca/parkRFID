@@ -1,5 +1,6 @@
 import z from "zod";
 import { sessionSchemaWithoutGroup } from "./create-session.schema.js";
+import { SessionSchema } from "./session.schema.js";
 
 export const createSessionGroupSchema = {
 	body: z.object({
@@ -15,7 +16,7 @@ export const createSessionGroupSchema = {
 				responsibleCpf: z.string(),
 				responsiblePhoneNumber: z.string(),
 			}),
-			session: sessionSchemaWithoutGroup,
+			session: SessionSchema,
 			message: z.string(),
 		}),
 	},

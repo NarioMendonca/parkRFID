@@ -4,6 +4,7 @@ import { CreateSessionInput } from "./create-session.js";
 import { SessionDTO } from "@/model/dtos/session-dto.js";
 import { UseCase } from "../UseCase.js";
 import { DomainError } from "@/errors/DomainError.js";
+import { AlreadyExistsError } from "@/errors/AlreadyExistsError.js";
 
 type InitializeSessionGroupInput = {
 	responsibleCpf: string;
@@ -31,17 +32,28 @@ export class InitializeSessionGroupUseCase {
 			throw new DomainError("A sessão do responsável do grupo não pode ser do tipo infantil")
 		}
 
+		const sessionGroupAlreadyExists = await this.sessionsRepository.findActiveSessionGroupByCpf(responsibleCpf)
+		if (sessionGroupAlreadyExists) {
+			throw new AlreadyExistsError("Uma sessão de grupo com o mesmo cpf já está ativa")
+		}
+
 		const sessionGroup = SessionGroup.create({
 			responsibleCpf,
 			responsiblePhoneNumber,
 		});
 		await this.sessionsRepository.createSessionGroup(sessionGroup);
 
-		const session = await this.createSessionUseCase.handle({ braceletId, sessionType: "NORMAL", sessionGroupId: sessionGroup.id })
+		try {
+			const session = await this.createSessionUseCase.handle({ braceletId, sessionType: "NORMAL", sessionGroupId: sessionGroup.id })
 
-		return {
-			sessionGroup,
-			session
-		};
+			return {
+				sessionGroup,
+				session
+			};
+		} catch (error) {
+			await this.sessionsRepository.deleteSessionGroup(sessionGroup.id);
+			throw error
+		}
+
 	}
 }

@@ -9,7 +9,7 @@ const dbPath = `${testDbsDir}/${randomUUID()}.db`;
 copyFileSync(templateDbPath, dbPath);
 process.env.DATABASE_URL = `file:${dbPath}`;
 
-const { prisma } = await import("@/lib/prisma.js");
+export const { prisma } = await import("@/lib/prisma.js");
 
 beforeEach(async () => {
 	await prisma.orderItems.deleteMany();
