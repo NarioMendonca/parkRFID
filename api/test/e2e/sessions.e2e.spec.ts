@@ -13,7 +13,7 @@ import {
 const app = await createTestApp();
 
 describe("POST /sessions/checkin/group", () => {
-	it("cria um grupo com o responsável", async () => {
+	it("bloqueia inicializar um grupo sem uma sessão", async () => {
 		const response = await app.inject({
 			method: "POST",
 			url: "/sessions/checkin/group",
@@ -23,41 +23,79 @@ describe("POST /sessions/checkin/group", () => {
 			},
 		});
 
+		expect(response.statusCode).toBe(400);
+	});
+	
+	it("cria um grupo com o responsável e sua sessão", async () => {
+		await registerBracelet(app)
+		const response = await createSessionGroup(app)
+
 		expect(response.statusCode).toBe(200);
 		expect(response.json().sessionGroup).toEqual({
 			id: expect.any(String),
 			responsibleCpf: "12345678901",
 			responsiblePhoneNumber: "11999999999",
 		});
+		expect(response.json().session.braceletId)
 	});
 
 	it("não cria um grupo com CPF inválido", async () => {
+		await registerBracelet(app)
 		const response = await app.inject({
 			method: "POST",
 			url: "/sessions/checkin/group",
-			payload: { responsibleCpf: "123", responsiblePhoneNumber: "11999999999" },
+			payload: { 
+				responsibleCpf: "123", 
+				responsiblePhoneNumber: "11999999999", 
+				groupFirstSession: {
+					braceletId: BRACELET_UID,
+					sessionType: "NORMAL"
+				}
+			},
 		});
 
 		expect(response.statusCode).toBe(400);
 	});
+
+	it("bloqueia inicializar um grupo com uma sessão do tipo KID", async () => {
+		const response = await app.inject({
+			method: "POST",
+			url: "/sessions/checkin/group",
+			payload: {
+				responsibleCpf: "12345678901",
+				responsiblePhoneNumber: "11999999999",
+				groupFirstSession: {
+					braceletId: BRACELET_UID,
+					sessionType: "KID"
+				}
+			},
+		});
+
+		expect(response.statusCode).toBe(400);
+		expect(response.json().message).toBe("A sessão do responsável do grupo não pode ser do tipo infantil");
+	});
 });
 
 describe("POST /sessions/checkin", () => {
-	it("abre uma sessão para uma pulseira cadastrada", async () => {
+	it("abre uma sessão em uma pulseira em um grupo que já foi criado com outra pulseira", async () => {
+		const newBraceletId = "1231412341234"
 		await registerBracelet(app);
+		await registerBracelet(app, newBraceletId);
+
+		const createdGroup = (await createSessionGroup(app)).json()
 
 		const response = await app.inject({
 			method: "POST",
 			url: "/sessions/checkin",
 			payload: {
-				braceletId: BRACELET_UID,
-				sessionGroupId: await createSessionGroup(app),
+				braceletId: newBraceletId,
+				sessionGroupId: createdGroup.sessionGroup.id,
 			},
 		});
 
 		expect(response.statusCode).toBe(200);
 		expect(response.json().session).toMatchObject({
-			braceletId: BRACELET_UID,
+			braceletId: newBraceletId,
 			status: "OPEN",
 			total: "0",
 			sessionType: "NORMAL",
@@ -65,15 +103,19 @@ describe("POST /sessions/checkin", () => {
 		});
 	});
 
-	it("abre uma sessão do tipo KID", async () => {
+	it("abre uma sessão do tipo KID em um grupo", async () => {
+		const kidBracelet = "kidbracelet123123"
 		await registerBracelet(app);
+		await registerBracelet(app, kidBracelet)
+
+		const groupId = (await createSessionGroup(app)).json().sessionGroup.id
 
 		const response = await app.inject({
 			method: "POST",
 			url: "/sessions/checkin",
 			payload: {
-				braceletId: BRACELET_UID,
-				sessionGroupId: await createSessionGroup(app),
+				braceletId: kidBracelet,
+				sessionGroupId: groupId,
 				sessionType: "KID",
 			},
 		});
@@ -83,14 +125,7 @@ describe("POST /sessions/checkin", () => {
 	});
 
 	it("não permite check-in de pulseira não cadastrada", async () => {
-		const response = await app.inject({
-			method: "POST",
-			url: "/sessions/checkin",
-			payload: {
-				braceletId: BRACELET_UID,
-				sessionGroupId: await createSessionGroup(app),
-			},
-		});
+		const response = await createSessionGroup(app)
 
 		expect(response.statusCode).toBe(404);
 	});
@@ -110,19 +145,23 @@ describe("POST /sessions/checkin", () => {
 		expect(response.statusCode).toBe(404);
 	});
 
-	it("não permite duas sessões ativas na mesma pulseira", async () => {
-		await checkin(app);
+	it("não permite duas sessões ativas na mesma pulseira no mesmo grupo ou em grupos diferentes", async () => {
+		await registerBracelet(app)
+		const groupId = (await createSessionGroup(app)).json().sessionGroup.id
 
-		const response = await app.inject({
+		const sessionOnSameGroup = await app.inject({
 			method: "POST",
 			url: "/sessions/checkin",
 			payload: {
 				braceletId: BRACELET_UID,
-				sessionGroupId: await createSessionGroup(app),
+				sessionGroupId: groupId,
 			},
 		});
 
-		expect(response.statusCode).toBe(409);
+		const sessionOnDiffGroup = await createSessionGroup(app)
+
+		expect(sessionOnSameGroup.statusCode).toBe(409);
+		expect(sessionOnDiffGroup.statusCode).toBe(409);
 	});
 
 	it("permite um novo check-in depois da saída", async () => {
@@ -132,14 +171,7 @@ describe("POST /sessions/checkin", () => {
 			url: `/sessions/${BRACELET_UID}/exit`,
 		});
 
-		const response = await app.inject({
-			method: "POST",
-			url: "/sessions/checkin",
-			payload: {
-				braceletId: BRACELET_UID,
-				sessionGroupId: await createSessionGroup(app),
-			},
-		});
+		const response = await createSessionGroup(app)
 
 		expect(response.statusCode).toBe(200);
 	});

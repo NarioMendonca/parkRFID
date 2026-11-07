@@ -31,13 +31,35 @@ export async function registerBracelet(
 	return uidRfid;
 }
 
-export async function createSessionGroup(app: FastifyInstance) {
-	const body = await post(app, "/sessions/checkin/group", {
-		responsibleCpf: "12345678901",
-		responsiblePhoneNumber: "11999999999",
+export async function createSessionGroup(app: FastifyInstance, uidRfid: string = BRACELET_UID) {
+	const response = await app.inject({
+		method: "POST",
+		url: "/sessions/checkin/group",
+		payload: {
+			responsibleCpf: "12345678901",
+			responsiblePhoneNumber: "11999999999",
+			groupFirstSession: {
+				braceletId: uidRfid,
+				sessionType: "NORMAL"
+			}
+		}
 	});
 
-	return body.sessionGroup.id as string;
+	return response
+}
+
+export async function createSession(app: FastifyInstance, groupId: string, uidRfid: string = BRACELET_UID) {
+	const response = await app.inject({
+		method: "POST",
+		url: "/sessions/checkin",
+		payload: {
+			braceletId: uidRfid,
+			sessionGroupId: groupId,
+			sessionType: "NORMAL"
+		}
+	});
+
+	return response
 }
 
 export async function createMenuItem(
@@ -58,11 +80,8 @@ export async function createMenuItem(
 // Registers the bracelet and opens a session for it
 export async function checkin(app: FastifyInstance, uidRfid = BRACELET_UID) {
 	await registerBracelet(app, uidRfid);
-	const sessionGroupId = await createSessionGroup(app);
-	await post(app, "/sessions/checkin", {
-		braceletId: uidRfid,
-		sessionGroupId,
-	});
+	await createSessionGroup(app, uidRfid);
+
 
 	return uidRfid;
 }

@@ -3,7 +3,7 @@ import { SessionDTO } from "@/model/dtos/session-dto.js";
 import { PrismaBraceletsRepository } from "@/repositories/prisma-bracelets-repository.js";
 import { PrismaSessionsRepository } from "@/repositories/prisma-sessions-repository.js";
 
-type CreateSessionInput = {
+export type CreateSessionInput = {
 	sessionGroupId: string;
 	braceletId: string;
 	sessionType?: "NORMAL" | "KID";
