@@ -4,6 +4,7 @@ import { sessionGroupToResponse } from "@/model/mappers/session-group-to-respons
 import { InitializeSessionGroupUseCase } from "@/usecases/sessions/initialize-sessions-group.js";
 import { createSessionGroupSchema } from "../schemas/initialize-session-group.schema.js";
 import { CreateSessionUseCase } from "@/usecases/sessions/create-session.js";
+import { sessionToResponse } from "@/model/mappers/session-to-response.js";
 
 const createSessionUsecase = new CreateSessionUseCase()
 const initializeSessionGroupUseCase = new InitializeSessionGroupUseCase(createSessionUsecase);
@@ -17,13 +18,14 @@ export async function createSessionGroupRoute(app: FastifyInstance) {
 			async (request, reply) => {
 				const { responsibleCpf, responsiblePhoneNumber, groupFirstSession } = request.body;
 
-				const { sessionGroup: sessionGroupRaw, session } = await initializeSessionGroupUseCase.handle({
+				const { sessionGroup: sessionGroupRaw, session: sessionRaw } = await initializeSessionGroupUseCase.handle({
 					responsibleCpf,
 					responsiblePhoneNumber,
 					groupFirstSession
 				});
 
 				const sessionGroup = sessionGroupToResponse(sessionGroupRaw);
+				const session = sessionToResponse(sessionRaw)
 
 				reply
 					.status(200)

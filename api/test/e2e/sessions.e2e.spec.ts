@@ -39,6 +39,26 @@ describe("POST /sessions/checkin/group", () => {
 		expect(response.json().session.braceletId)
 	});
 
+	it("Don't create a session group when session creation proccess fails", async () => {
+		const sessionCpf = "12345678910"
+		// trying to create a session group without a bracelet registed, so the bracelet creation process will fail
+		await app.inject({
+			method: "POST",
+			url: "/sessions/checkin/group",
+			payload: { 
+				responsibleCpf: sessionCpf, 
+				responsiblePhoneNumber: "11999999999", 
+				groupFirstSession: {
+					braceletId: BRACELET_UID, // this bracelet id was not created before
+					sessionType: "NORMAL"
+				}
+			},
+		})
+
+		expect(await prisma.sessionsGroup.count()).toBe(0)
+		expect(await prisma.sessions.count()).toBe(0)
+	})
+
 	it("não cria um grupo com CPF inválido", async () => {
 		await registerBracelet(app)
 		const response = await app.inject({
@@ -56,6 +76,17 @@ describe("POST /sessions/checkin/group", () => {
 
 		expect(response.statusCode).toBe(400);
 	});
+
+	it("blocks a session group creation if another session group with same credentials are open", async () => {
+		await registerBracelet(app)
+		await registerBracelet(app, "bracelet2ABC123")
+
+		await createSessionGroup(app)
+		const response = await createSessionGroup(app, "bracelet2ABC123")
+
+		expect(response.statusCode).toBe(409);
+		expect(response.json().message).toBe("Uma sessão de grupo com o mesmo cpf já está ativa")
+	})
 
 	it("bloqueia inicializar um grupo com uma sessão do tipo KID", async () => {
 		const response = await app.inject({
@@ -75,6 +106,7 @@ describe("POST /sessions/checkin/group", () => {
 		expect(response.json().message).toBe("A sessão do responsável do grupo não pode ser do tipo infantil");
 	});
 });
+
 
 describe("POST /sessions/checkin", () => {
 	it("abre uma sessão em uma pulseira em um grupo que já foi criado com outra pulseira", async () => {
