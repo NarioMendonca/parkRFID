@@ -1,7 +1,13 @@
 import { randomUUID } from "node:crypto";
 import { describe, expect, it } from "vitest";
+import { prisma } from "@/lib/prisma.js";
 import { createTestApp } from "../helpers/app.js";
-import { createMenuItem } from "../helpers/factories.js";
+import {
+	BRACELET_UID,
+	checkin,
+	createMenuItem,
+	placeOrder,
+} from "../helpers/factories.js";
 
 const app = await createTestApp();
 
@@ -43,6 +49,24 @@ describe("POST /menu", () => {
 		});
 
 		expect(response.statusCode).toBe(409);
+	});
+
+	it("permite recriar um item com o nome de um item removido", async () => {
+		const menuItem = await createMenuItem(app, { name: "Pipoca" });
+		await app.inject({ method: "DELETE", url: `/menu/${menuItem.id}` });
+
+		const response = await app.inject({
+			method: "POST",
+			url: "/menu",
+			payload: {
+				name: "Pipoca",
+				category: "snack",
+				price: "5",
+				isAvaliable: true,
+			},
+		});
+
+		expect(response.statusCode).toBe(200);
 	});
 
 	it.each(["0", "-5"])("não cria item com preço %s", async (price) => {
@@ -107,6 +131,26 @@ describe("PATCH /menu/:id", () => {
 		});
 	});
 
+	it("atualiza o item da URL, ignorando o id enviado no body", async () => {
+		const pipoca = await createMenuItem(app, { name: "Pipoca" });
+		const suco = await createMenuItem(app, { name: "Suco" });
+
+		const response = await app.inject({
+			method: "PATCH",
+			url: `/menu/${pipoca.id}`,
+			payload: { ...pipoca, id: suco.id, name: "Pipoca Grande" },
+		});
+
+		expect(response.statusCode).toBe(200);
+		expect(response.json().menuItem).toMatchObject({
+			id: pipoca.id,
+			name: "Pipoca Grande",
+		});
+		expect(
+			await prisma.menuItems.findUniqueOrThrow({ where: { id: suco.id } }),
+		).toMatchObject({ name: "Suco" });
+	});
+
 	it("não atualiza item com preço inválido", async () => {
 		const menuItem = await createMenuItem(app);
 
@@ -136,6 +180,19 @@ describe("PATCH /menu/:id", () => {
 
 		expect(response.statusCode).toBe(404);
 	});
+
+	it("retorna 404 ao atualizar item removido", async () => {
+		const menuItem = await createMenuItem(app);
+		await app.inject({ method: "DELETE", url: `/menu/${menuItem.id}` });
+
+		const response = await app.inject({
+			method: "PATCH",
+			url: `/menu/${menuItem.id}`,
+			payload: menuItem,
+		});
+
+		expect(response.statusCode).toBe(404);
+	});
 });
 
 describe("DELETE /menu/:id", () => {
@@ -150,6 +207,44 @@ describe("DELETE /menu/:id", () => {
 
 		const listResponse = await app.inject({ method: "GET", url: "/menu" });
 		expect(listResponse.json()).toHaveLength(0);
+	});
+
+	it("desativa o item em vez de apagá-lo do banco", async () => {
+		const menuItem = await createMenuItem(app);
+
+		await app.inject({ method: "DELETE", url: `/menu/${menuItem.id}` });
+
+		expect(
+			await prisma.menuItems.findUniqueOrThrow({ where: { id: menuItem.id } }),
+		).toMatchObject({ isActive: false });
+	});
+
+	it("remove um item que já foi pedido, mantendo o pedido", async () => {
+		await checkin(app);
+		const menuItem = await createMenuItem(app);
+		await placeOrder(app, BRACELET_UID, [
+			{ menuItemId: menuItem.id, amount: 1 },
+		]);
+
+		const response = await app.inject({
+			method: "DELETE",
+			url: `/menu/${menuItem.id}`,
+		});
+
+		expect(response.statusCode).toBe(200);
+		expect(await prisma.orderItems.count()).toBe(1);
+	});
+
+	it("retorna 404 ao remover um item já removido", async () => {
+		const menuItem = await createMenuItem(app);
+		await app.inject({ method: "DELETE", url: `/menu/${menuItem.id}` });
+
+		const response = await app.inject({
+			method: "DELETE",
+			url: `/menu/${menuItem.id}`,
+		});
+
+		expect(response.statusCode).toBe(404);
 	});
 
 	it("retorna 404 ao remover item inexistente", async () => {

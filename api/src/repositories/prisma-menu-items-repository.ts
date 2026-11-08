@@ -10,11 +10,13 @@ function toMenuItemEntity(menuItem: MenuItems) {
 	});
 }
 
+// Inactive items were removed from the menu, so every lookup skips them
 export class PrismaMenuItemsRepository {
 	async findItemByName(name: string) {
 		const menuItem = await prisma.menuItems.findFirst({
 			where: {
 				name,
+				isActive: true,
 			},
 		});
 
@@ -29,6 +31,7 @@ export class PrismaMenuItemsRepository {
 				category: menuItem.category,
 				price: menuItem.price,
 				isAvaliable: menuItem.isAvaliable,
+				isActive: menuItem.isActive,
 			},
 		});
 	}
@@ -37,6 +40,7 @@ export class PrismaMenuItemsRepository {
 		const menuItems = await prisma.menuItems.findMany({
 			where: {
 				category,
+				isActive: true,
 			},
 		});
 
@@ -49,6 +53,7 @@ export class PrismaMenuItemsRepository {
 				id: {
 					in: itemsId,
 				},
+				isActive: true,
 			},
 		});
 
@@ -59,6 +64,7 @@ export class PrismaMenuItemsRepository {
 		const menuItem = await prisma.menuItems.findFirst({
 			where: {
 				id,
+				isActive: true,
 			},
 		});
 
@@ -75,14 +81,7 @@ export class PrismaMenuItemsRepository {
 				category: menuItem.category,
 				price: menuItem.price,
 				isAvaliable: menuItem.isAvaliable,
-			},
-		});
-	}
-
-	async deleteItem(id: string) {
-		await prisma.menuItems.delete({
-			where: {
-				id,
+				isActive: menuItem.isActive,
 			},
 		});
 	}

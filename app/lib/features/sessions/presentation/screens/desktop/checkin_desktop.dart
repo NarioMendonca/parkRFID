@@ -152,6 +152,16 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
 
   Future<void> _finalizeCheckin() async {
     if (_bands.isEmpty) return;
+
+    // A sessão do responsável vai junto com a criação do grupo e tem que ser
+    // adulta (a API recusa KID): usa a primeira pulseira adulta da lista.
+    final leaderIndex = _bands.indexWhere((b) => b['type'] != 'kid');
+    if (leaderIndex < 0) {
+      _showError('O grupo precisa de pelo menos uma pulseira adulta para o responsável.');
+      return;
+    }
+    final leader = _bands[leaderIndex];
+
     setState(() => _isLoading = true);
 
     try {
@@ -161,6 +171,10 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
       final groupRes = await _dio.post('/sessions/checkin/group', data: {
         'responsibleCpf': cleanCpf,
         'responsiblePhoneNumber': cleanPhone,
+        'groupFirstSession': {
+          'braceletId': leader['uid'],
+          'sessionType': 'NORMAL',
+        },
       });
 
       String? groupId;
@@ -175,6 +189,7 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
       }
 
       for (final b in _bands) {
+        if (identical(b, leader)) continue;
         await _dio.post('/sessions/checkin', data: {
           'braceletId': b['uid'],
           'sessionGroupId': groupId,
@@ -186,8 +201,16 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
         _finishedAt = DateTime.now();
         _step = 4;
       });
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      final apiMessage = data is Map ? data['message']?.toString() : null;
+      _showError(apiMessage != null && apiMessage.isNotEmpty
+          ? apiMessage
+          : e.response == null
+              ? 'Sem conexão com o servidor. Verifique a rede e tente novamente.'
+              : 'Erro ao finalizar check-in.');
     } catch (e) {
-      _showError('Erro ao finalizar check-in: $e');
+      _showError('Erro ao finalizar check-in: ${e.toString().replaceAll('Exception: ', '')}');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

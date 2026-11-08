@@ -52,9 +52,7 @@ export class Bracelet {
 
 	checkin(sessionGroup: SessionGroup, sessionType: SessionType) {
 		if (this.props.activeSession) {
-			throw new AlreadyExistsError(
-				"Session active already exists in this bracelet",
-			);
+			throw new AlreadyExistsError("Essa pulseira já tem uma sessão ativa");
 		}
 
 		const session = Session.open({ bracelet: this, sessionGroup, sessionType });
@@ -62,20 +60,18 @@ export class Bracelet {
 		return session;
 	}
 
-	placeOrder(
-		items: OrderItem[],
-		menuItems: MenuItem[],
-		tableNumber?: string,
-	) {
+	placeOrder(items: OrderItem[], menuItems: MenuItem[]) {
 		if (!this.props.activeSession) {
-			throw new NotFoundError("Session not found");
+			throw new NotFoundError(
+				"Nenhuma sessão ativa foi encontrada nessa pulseira",
+			);
 		}
 
 		const order = Order.place({
 			session: this.props.activeSession,
 			items,
 			menuItems,
-			tableNumber,
+			createdBy: "SESSION",
 		});
 
 		this.props.activeSession.addValueToBalance(order.balance);
@@ -88,10 +84,16 @@ export class Bracelet {
 	pay() {
 		const session = this.props.activeSession;
 		if (!session) {
-			throw new NotFoundError("Session to pay not found");
+			throw new NotFoundError(
+				"Nenhuma sessão ativa foi encontrada nessa pulseira",
+			);
 		}
 
-		const payment = Payment.register({ session, amount: session.pay() });
+		const payment = Payment.register({
+			session,
+			amount: session.pay(),
+			paymentTo: "SESSION",
+		});
 		return { session, payment };
 	}
 
@@ -105,7 +107,7 @@ export class Bracelet {
 
 		if (session.hasPendingBalance()) {
 			throw new DomainError(
-				`Session has a pending balance of ${session.total.toFixed(2)}`,
+				`A sessão tem um saldo pendente de R$ ${session.total.toFixed(2).replace(".", ",")}`,
 				409,
 			);
 		}

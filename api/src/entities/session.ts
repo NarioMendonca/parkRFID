@@ -10,13 +10,13 @@ export type SessionType = "NORMAL" | "KID";
 
 type SessionProps = {
 	id: string;
+	group: SessionGroup;
 	braceletId: string;
 	checkinDate: Date;
 	checkoutDate: Date | null;
 	status: SessionStatus;
 	total: Decimal;
 	sessionType: SessionType;
-	sessionsGroupId: string;
 };
 
 type OpenSessionInput = {
@@ -37,7 +37,7 @@ export class Session {
 			status: "OPEN",
 			total: new Decimal("0"),
 			sessionType,
-			sessionsGroupId: sessionGroup.id,
+			group: sessionGroup,
 		});
 	}
 
@@ -47,6 +47,14 @@ export class Session {
 
 	get id() {
 		return this.props.id;
+	}
+
+	get group() {
+		return this.props.group;
+	}
+
+	get sessionsGroupId() {
+		return this.props.group.id;
 	}
 
 	get braceletId() {
@@ -73,12 +81,12 @@ export class Session {
 		return this.props.sessionType;
 	}
 
-	get sessionsGroupId() {
-		return this.props.sessionsGroupId;
-	}
-
 	addValueToBalance(value: Decimal) {
 		this.props.total = this.props.total.add(value);
+	}
+
+	addValueToGroupBalance(value: Decimal) {
+		this.props.group.addValueToBalance(value);
 	}
 
 	hasPendingBalance() {
@@ -88,7 +96,7 @@ export class Session {
 	// Settles the whole pending balance and returns the amount paid
 	pay() {
 		if (!this.hasPendingBalance()) {
-			throw new DomainError("Session has no pending balance", 409);
+			throw new DomainError("A sessão não tem saldo pendente", 409);
 		}
 
 		const paidAmount = this.props.total;
@@ -98,7 +106,7 @@ export class Session {
 
 	close() {
 		if (this.props.status === "CLOSED") {
-			throw new DomainError("Session already closed");
+			throw new DomainError("Sessão já encerrada");
 		}
 
 		this.props.status = "CLOSED";

@@ -107,6 +107,71 @@ describe("POST /orders", () => {
 		expect(response.statusCode).toBe(404);
 	});
 
+	it.each([0, -1, 1.5])("não cria pedido com quantidade %s", async (amount) => {
+		await checkin(app);
+		const menuItem = await createMenuItem(app);
+
+		const response = await app.inject({
+			method: "POST",
+			url: "/orders",
+			payload: {
+				braceletId: BRACELET_UID,
+				items: [{ menuItemId: menuItem.id, amount }],
+			},
+		});
+
+		expect(response.statusCode).toBe(400);
+		expect(await prisma.orders.count()).toBe(0);
+	});
+
+	it("não cria pedido sem itens", async () => {
+		await checkin(app);
+
+		const response = await app.inject({
+			method: "POST",
+			url: "/orders",
+			payload: { braceletId: BRACELET_UID, items: [] },
+		});
+
+		expect(response.statusCode).toBe(400);
+		expect(await prisma.orders.count()).toBe(0);
+	});
+
+	it("não cria pedido com item indisponível", async () => {
+		await checkin(app);
+		const menuItem = await createMenuItem(app, { isAvaliable: false });
+
+		const response = await app.inject({
+			method: "POST",
+			url: "/orders",
+			payload: {
+				braceletId: BRACELET_UID,
+				items: [{ menuItemId: menuItem.id, amount: 1 }],
+			},
+		});
+
+		expect(response.statusCode).toBe(409);
+		expect(await prisma.orders.count()).toBe(0);
+	});
+
+	it("não cria pedido com item removido do cardápio", async () => {
+		await checkin(app);
+		const menuItem = await createMenuItem(app);
+		await app.inject({ method: "DELETE", url: `/menu/${menuItem.id}` });
+
+		const response = await app.inject({
+			method: "POST",
+			url: "/orders",
+			payload: {
+				braceletId: BRACELET_UID,
+				items: [{ menuItemId: menuItem.id, amount: 1 }],
+			},
+		});
+
+		expect(response.statusCode).toBe(404);
+		expect(await prisma.orders.count()).toBe(0);
+	});
+
 	it("não cria pedido com item inexistente no cardápio", async () => {
 		await checkin(app);
 

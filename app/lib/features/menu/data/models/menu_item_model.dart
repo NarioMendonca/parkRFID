@@ -30,10 +30,9 @@ class MenuItemModel {
     );
   }
 
-  /// Corpo esperado pela API em `PATCH /menu/:id`.
+  /// Corpo esperado pela API em `PATCH /menu/:id` (o id vai só na URL).
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'name': name,
       'category': category,
       'price': price,

@@ -11,8 +11,10 @@ export async function deleteMenuItemRoute(app: FastifyInstance) {
 		{
 			schema: {
 				params: z.object({ id: z.string() }),
-				200: z.object({ message: z.string() }),
-				404: z.object({ message: z.string() }),
+				response: {
+					200: z.object({ message: z.string() }),
+					404: z.object({ message: z.string() }),
+				},
 			},
 		},
 		async (request, reply) => {

@@ -4,7 +4,9 @@ import 'package:provider/provider.dart';
 import '../../../../core/api/api_client.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../controllers/pedido_provider.dart';
+import '../../../../core/config/feature_flags.dart';
 import 'tela_atribuir_mesa.dart';
+import 'tela_revisar_pedido.dart';
 
 class TelaSelecaoProdutos extends StatefulWidget {
   const TelaSelecaoProdutos({super.key});
@@ -374,7 +376,10 @@ class _TelaSelecaoProdutosState extends State<TelaSelecaoProdutos> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const TelaAtribuirMesa(),
+                  // Sem mesa/impressão na API, vai direto para a revisão.
+                  builder: (context) => FeatureFlags.mesaEImpressao
+                      ? const TelaAtribuirMesa()
+                      : const TelaRevisarPedido(),
                 ),
               );
             },

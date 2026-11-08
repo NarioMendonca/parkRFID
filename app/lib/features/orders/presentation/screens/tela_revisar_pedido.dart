@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/api/api_client.dart';
+import '../../../../core/config/feature_flags.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../data/models/pedido_concluido_model.dart';
 import '../controllers/pedido_provider.dart';
@@ -24,7 +25,8 @@ class _TelaRevisarPedidoState extends State<TelaRevisarPedido> {
     try {
       final payload = {
         "braceletId": provider.braceletId ?? "",
-        if (provider.mesa != null) "tableNumber": provider.mesa,
+        if (FeatureFlags.mesaEImpressao && provider.mesa != null)
+          "tableNumber": provider.mesa,
         "items": provider.itensCarrinho.map((item) {
           return {
             "menuItemId": item['id'],
@@ -39,7 +41,7 @@ class _TelaRevisarPedidoState extends State<TelaRevisarPedido> {
         // Guarda o que foi enviado antes de limpar o carrinho.
         final concluido = PedidoConcluidoModel(
           braceletId: provider.braceletId ?? '',
-          mesa: provider.mesa,
+          mesa: FeatureFlags.mesaEImpressao ? provider.mesa : null,
           criadoEm: DateTime.now(),
           itens: provider.itensCarrinho
               .map((item) => PedidoConcluidoItem(
@@ -104,8 +106,10 @@ class _TelaRevisarPedidoState extends State<TelaRevisarPedido> {
                 padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
                 children: [
                   _buildPulseiraCard(provider),
-                  const SizedBox(height: 16),
-                  _buildMesaCard(provider),
+                  if (FeatureFlags.mesaEImpressao) ...[
+                    const SizedBox(height: 16),
+                    _buildMesaCard(provider),
+                  ],
                   const SizedBox(height: 16),
                   _buildItensCard(provider),
                   const SizedBox(height: 24),

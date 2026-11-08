@@ -147,10 +147,12 @@ class CheckinController extends ChangeNotifier {
   void addScannedToGroup() {
     final uid = _scannedUid;
     if (uid == null) return;
+    // O responsável é a primeira pulseira adulta: a API não aceita KID como
+    // sessão do responsável.
     _bracelets.add(CheckinBraceletModel(
       braceletId: uid,
       type: _selectedType,
-      isLeader: _bracelets.isEmpty,
+      isLeader: !_selectedType.isKid && !_bracelets.any((b) => b.isLeader),
     ));
     _scannedUid = null;
     _step = CheckinStep.grupo;
@@ -161,9 +163,10 @@ class CheckinController extends ChangeNotifier {
   void removeBracelet(int index) {
     if (index < 0 || index >= _bracelets.length) return;
     _bracelets.removeAt(index);
-    // Se o líder saiu, a primeira pulseira restante vira a líder.
-    if (_bracelets.isNotEmpty && !_bracelets.any((b) => b.isLeader)) {
-      _bracelets[0] = _bracelets[0].copyWith(isLeader: true);
+    // Se o líder saiu, a primeira pulseira adulta restante vira a líder.
+    if (!_bracelets.any((b) => b.isLeader)) {
+      final next = _bracelets.indexWhere((b) => !b.type.isKid);
+      if (next >= 0) _bracelets[next] = _bracelets[next].copyWith(isLeader: true);
     }
     _notify();
   }
@@ -172,19 +175,28 @@ class CheckinController extends ChangeNotifier {
   Future<String?> finishCheckin() async {
     if (_bracelets.isEmpty) return 'Nenhuma pulseira foi registrada no grupo.';
 
+    final leaderIndex = _bracelets.indexWhere((b) => b.isLeader);
+    if (leaderIndex < 0) {
+      return 'O grupo precisa de pelo menos uma pulseira adulta para o responsável.';
+    }
+    final leader = _bracelets[leaderIndex];
+
     _isLoading = true;
     _notify();
 
     try {
-      final group = await _repository.createGroup(
+      // O grupo já nasce com a sessão do responsável.
+      final (:group, session: _) = await _repository.initializeGroup(
         responsibleCpf: _digits(_responsibleCpf),
         responsiblePhoneNumber: _digits(_responsiblePhone),
+        responsibleBraceletId: leader.braceletId,
       );
       if (group.id.isEmpty) {
         throw Exception('Não foi possível obter o ID do grupo criado.');
       }
 
       for (final bracelet in _bracelets) {
+        if (identical(bracelet, leader)) continue;
         await _repository.checkinBracelet(
           braceletId: bracelet.braceletId,
           sessionGroupId: group.id,

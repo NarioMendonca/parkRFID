@@ -9,6 +9,6 @@ export function sessionToResponse(sessionDTO: SessionDTO) {
 		status: sessionDTO.status,
 		total: sessionDTO.total.toString(),
 		sessionType: sessionDTO.sessionType,
-		sessionsGroupId: sessionDTO.sessionsGroupId,
+		sessionsGroupId: sessionDTO.sessionGroupId,
 	};
 }

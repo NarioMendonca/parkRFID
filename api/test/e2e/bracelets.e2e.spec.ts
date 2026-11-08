@@ -43,14 +43,7 @@ describe("DELETE /bracelets/:uid_rfid", () => {
 		});
 		expect(response.statusCode).toBe(204);
 
-		const checkinResponse = await app.inject({
-			method: "POST",
-			url: "/sessions/checkin",
-			payload: {
-				braceletId: BRACELET_UID,
-				sessionGroupId: await createSessionGroup(app),
-			},
-		});
+		const checkinResponse = await createSessionGroup(app, BRACELET_UID)
 		expect(checkinResponse.statusCode).toBe(404);
 	});
 
@@ -77,16 +70,10 @@ describe("DELETE /bracelets/:uid_rfid", () => {
 
 describe("GET /bracelets/:uid_rfid/sessions", () => {
 	it("lista todas as sessões da pulseira, da mais recente para a mais antiga", async () => {
-		await checkin(app);
+		await registerBracelet(app)
+		await createSessionGroup(app)
 		await app.inject({ method: "POST", url: `/sessions/${BRACELET_UID}/exit` });
-		await app.inject({
-			method: "POST",
-			url: "/sessions/checkin",
-			payload: {
-				braceletId: BRACELET_UID,
-				sessionGroupId: await createSessionGroup(app),
-			},
-		});
+		await createSessionGroup(app)
 
 		const response = await app.inject({
 			method: "GET",

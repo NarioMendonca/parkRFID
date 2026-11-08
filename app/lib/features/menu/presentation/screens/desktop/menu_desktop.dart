@@ -359,7 +359,7 @@ class _TelaMenuDesktopState extends State<TelaMenuDesktop> {
       };
 
       if (isEditing) {
-        body['id'] = id!;
+        // O id vai só na URL; a API ignora id no corpo.
         await _dio.patch('/menu/$id', data: body);
       } else {
         await _dio.post('/menu', data: body);
@@ -381,7 +381,6 @@ class _TelaMenuDesktopState extends State<TelaMenuDesktop> {
       });
 
       await _dio.patch('/menu/$id', data: {
-        'id': id,
         'name': item['name'],
         'category': item['category'],
         'price': item['price'],

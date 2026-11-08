@@ -8,7 +8,7 @@ export async function fetchBraceletSessions(uidRfid: string) {
 		},
 	});
 	if (!bracelet) {
-		throw new NotFoundError("Bracelet not registered");
+		throw new NotFoundError("Pulseira não cadastrada");
 	}
 
 	return await prisma.sessions.findMany({

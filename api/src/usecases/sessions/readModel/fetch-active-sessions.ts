@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma.js";
 
 export async function fetchActiveSessions() {
-	return await prisma.session.findMany({
+	return await prisma.sessions.findMany({
 		where: {
 			status: "OPEN",
 		},
@@ -10,5 +10,3 @@ export async function fetchActiveSessions() {
 		},
 	});
 }
-
-console.log(await fetchActiveSessions());

@@ -15,21 +15,16 @@ datasource db {
 }
 
 model SessionsGroup {
-  id                     String @id @default(uuid())
+  id                     String    @id @default(uuid())
   responsibleCpf         String
   responsiblePhoneNumber String
+  balance                Decimal   @default("0")
+  createdAt              DateTime  @default(now())
+  checkoutDt             DateTime?
+  status                 Status    @default(OPEN)
 
   session Sessions[]
-}
-
-enum Status {
-  OPEN
-  CLOSED
-}
-
-enum SessionType {
-  NORMAL
-  KID
+  order   Orders[]
 }
 
 model Bracelets {
@@ -38,20 +33,30 @@ model Bracelets {
   createdAt DateTime @default(now())
 }
 
+enum Status {
+  OPEN
+  CLOSED
+}
+
+enum SessionRole {
+  NORMAL
+  KID
+}
+
 model Sessions {
-  id              String      @id @default(uuid())
-  braceletId      String
-  checkoutDate    DateTime?
-  checkinDate     DateTime    @default(now())
-  status          Status      @default(OPEN)
-  total           Decimal     @default("0")
-  sessionType     SessionType @default(NORMAL)
-  sessionsGroupId String
+  id             String      @id @default(uuid())
+  braceletId     String
+  checkoutDate   DateTime?
+  checkinDate    DateTime    @default(now())
+  status         Status      @default(OPEN)
+  total          Decimal     @default("0")
+  sessionType    SessionRole @default(NORMAL)
+  sessionGroupId String
 
-  sessionGroup SessionsGroup @relation(fields: [sessionsGroupId], references: [id])
+  sessionGroup SessionsGroup @relation(fields: [sessionGroupId], references: [id])
 
-  orders   Orders[]
-  payments Payments[]
+  order   Orders[]
+  payment Payments[]
 
   @@unique([braceletId], where: { status: "OPEN" })
 }
@@ -61,41 +66,27 @@ model MenuItems {
   name        String
   category    String
   price       Decimal
-  isAvaliable Boolean
+  isAvaliable Boolean @default(true)
+  isActive    Boolean @default(true)
 
-  orderItems OrderItems[]
+  orderItem OrderItems[]
+}
+
+enum SessionType {
+  SESSION
+  SESSION_GROUP
 }
 
 model Orders {
-  id          String   @id @default(uuid())
-  createdAt   DateTime @default(now())
-  sessionId   String
-  tableNumber String?
+  id             String      @id @default(uuid())
+  createdAt      DateTime    @default(now())
+  sessionId      String?
+  sessionGroupId String?
+  createdBy      SessionType
 
-  session    Sessions     @relation(fields: [sessionId], references: [id])
-  orderItems OrderItems[]
-  printJobs  PrintJobs[]
-}
-
-enum PrintStatus {
-  PENDING
-  PRINTING
-  PRINTED
-  FAILED
-}
-
-// Queue of tickets to print, one job per order, handled oldest first
-model PrintJobs {
-  id            String      @id @default(uuid())
-  orderId       String
-  status        PrintStatus @default(PENDING)
-  attempts      Int         @default(0)
-  lastError     String?
-  createdAt     DateTime    @default(now())
-  nextAttemptAt DateTime    @default(now())
-  printedAt     DateTime?
-
-  order Orders @relation(fields: [orderId], references: [id])
+  session      Sessions?      @relation(fields: [sessionId], references: [id])
+  sessionGroup SessionsGroup? @relation(fields: [sessionGroupId], references: [id])
+  orderItem    OrderItems[]
 }
 
 model OrderItems {
@@ -103,17 +94,18 @@ model OrderItems {
   amount     Int
   unitPrice  Decimal
   menuItemId String
-  ordersId   String
+  orderId    String
 
-  menuItems MenuItems @relation(fields: [menuItemId], references: [id])
-  orders    Orders    @relation(fields: [ordersId], references: [id])
+  menuItem MenuItems @relation(fields: [menuItemId], references: [id])
+  order    Orders    @relation(fields: [orderId], references: [id])
 }
 
 model Payments {
-  id        String   @id @default(uuid())
+  id        String      @id @default(uuid())
   amount    Decimal
-  createdAt DateTime @default(now())
+  createdAt DateTime    @default(now())
   sessionId String
+  paymentTo SessionType
 
   session Sessions @relation(fields: [sessionId], references: [id])
 }

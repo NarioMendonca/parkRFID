@@ -14,10 +14,11 @@ export async function removeBracelet(app: FastifyInstance) {
 					uid_rfid: z.string(),
 				}),
 				response: {
-					204: z.object({
+					204: z.null(),
+					404: z.object({
 						message: z.string(),
 					}),
-					401: z.object({
+					409: z.object({
 						message: z.string(),
 					}),
 				},
@@ -28,7 +29,8 @@ export async function removeBracelet(app: FastifyInstance) {
 
 			await removeBraceletUseCase.handle({ uid_rfid });
 
-			return reply.status(204).send({ message: "bracelet removed" });
+			// A 204 response has no body
+			return reply.status(204).send(null);
 		},
 	);
 }

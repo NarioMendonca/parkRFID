@@ -8,9 +8,15 @@ class SessionsRepository {
   SessionsRepository(this._dio);
 
 
-  Future<SessionGroupModel> createGroup({
+  /// Abre o grupo já com a pulseira do responsável.
+  ///
+  /// API: `POST /sessions/checkin/group` → `{ sessionGroup, session, message }`.
+  /// A pulseira do responsável tem que ser NORMAL (a API recusa KID) e não pode
+  /// existir outro grupo ativo com o mesmo CPF (409).
+  Future<({SessionGroupModel group, SessionModel session})> initializeGroup({
     required String responsibleCpf,
     required String responsiblePhoneNumber,
+    required String responsibleBraceletId,
   }) async {
     try {
       final response = await _dio.post(
@@ -18,14 +24,18 @@ class SessionsRepository {
         data: {
           'responsibleCpf': responsibleCpf,
           'responsiblePhoneNumber': responsiblePhoneNumber,
+          'groupFirstSession': {
+            'braceletId': responsibleBraceletId,
+            'sessionType': 'NORMAL',
+          },
         },
       );
 
-
-      final groupData = response.data['sessionGroup'];
-      return SessionGroupModel.fromJson(groupData);
+      return (
+        group: SessionGroupModel.fromJson(response.data['sessionGroup']),
+        session: SessionModel.fromJson(response.data['session']),
+      );
     } on DioException catch (e) {
-
       throw _handleError(e, 'Erro ao criar grupo do responsável.');
     }
   }
