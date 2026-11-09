@@ -13,8 +13,9 @@ export async function createSessionRoute(app: FastifyInstance) {
 			"/checkin",
 			{ schema: createSessionSchema },
 			async (request, reply) => {
-				const { braceletId, sessionGroupId, sessionType } = request.body;
+				const { ownerName, braceletId, sessionGroupId, sessionType } = request.body;
 				const sessionRaw = await createSessionUseCase.handle({
+					ownerName,
 					braceletId,
 					sessionGroupId,
 					sessionType,
