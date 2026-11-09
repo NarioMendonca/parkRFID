@@ -50,12 +50,12 @@ export class Bracelet {
 		return this.props.activeSession;
 	}
 
-	checkin(sessionGroup: SessionGroup, sessionType: SessionType) {
+	checkin(ownerName: string, sessionGroup: SessionGroup, sessionType: SessionType) {
 		if (this.props.activeSession) {
 			throw new AlreadyExistsError("Essa pulseira já tem uma sessão ativa");
 		}
 
-		const session = Session.open({ bracelet: this, sessionGroup, sessionType });
+		const session = Session.open({ ownerName, bracelet: this, sessionGroup, sessionType });
 		this.props.activeSession = session;
 		return session;
 	}
@@ -75,7 +75,7 @@ export class Bracelet {
 			session: this.props.activeSession,
 			items,
 			menuItems,
-			createdBy: "SESSION",
+			createdFor: "SESSION",
 			tableNumber,
 		});
 

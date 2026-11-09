@@ -4,6 +4,7 @@ import { PrismaBraceletsRepository } from "@/repositories/prisma-bracelets-repos
 import { PrismaSessionsRepository } from "@/repositories/prisma-sessions-repository.js";
 
 export type CreateSessionInput = {
+	ownerName: string;
 	sessionGroupId: string;
 	braceletId: string;
 	sessionType?: "NORMAL" | "KID";
@@ -14,6 +15,7 @@ export class CreateSessionUseCase {
 	private prismaBraceletsRepository = new PrismaBraceletsRepository();
 
 	async handle({
+		ownerName,
 		braceletId,
 		sessionGroupId,
 		sessionType,
@@ -32,11 +34,12 @@ export class CreateSessionUseCase {
 			);
 		}
 
-		const session = bracelet.checkin(sessionGroup, sessionType ?? "NORMAL");
+		const session = bracelet.checkin(ownerName, sessionGroup, sessionType ?? "NORMAL");
 
 		await this.prismaSessionsRepository.createSession(session);
 		return {
 			id: session.id,
+			ownerName: ownerName,
 			braceletId: session.braceletId,
 			checkinDate: session.checkinDate,
 			checkoutDate: session.checkoutDate,

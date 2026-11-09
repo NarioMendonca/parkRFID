@@ -15,7 +15,7 @@ export type OrderLine = OrderItem & {
 	unitPrice: Decimal;
 };
 
-export type OrderCreatedBy = "SESSION" | "SESSION_GROUP";
+export type OrderCreatedFor = "SESSION" | "SESSION_GROUP";
 
 type OrderProps = {
 	id: string;
@@ -23,7 +23,7 @@ type OrderProps = {
 	createdAt: Date;
 	items: OrderLine[];
 	balance: Decimal;
-	createdBy: OrderCreatedBy;
+	createdFor: OrderCreatedFor;
 	tableNumber: string | null;
 };
 
@@ -31,7 +31,7 @@ type PlaceOrderInput = {
 	session: Session;
 	items: OrderItem[];
 	menuItems: MenuItem[];
-	createdBy: OrderCreatedBy;
+	createdFor: OrderCreatedFor;
 	tableNumber?: string;
 };
 
@@ -42,7 +42,7 @@ export class Order {
 		session,
 		items,
 		menuItems,
-		createdBy,
+		createdFor,
 		tableNumber,
 	}: PlaceOrderInput) {
 		const menuItemsById = new Map(
@@ -76,7 +76,7 @@ export class Order {
 			createdAt: new Date(),
 			items: lines,
 			balance: orderTotalBalance,
-			createdBy,
+			createdFor,
 			tableNumber: tableNumber ?? null,
 		});
 	}
@@ -101,8 +101,8 @@ export class Order {
 		return this.props.balance;
 	}
 
-	get createdBy() {
-		return this.props.createdBy
+	get createdFor() {
+		return this.props.createdFor
 	}
 
 	get tableNumber() {

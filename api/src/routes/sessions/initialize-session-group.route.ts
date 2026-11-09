@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { sessionGroupToResponse } from "@/model/mappers/session-group-to-response.js";
-import { InitializeSessionGroupUseCase } from "@/usecases/sessions/initialize-sessions-group.js";
+import { InitializeSessionGroupUseCase } from "@/usecases/sessions/initialize-session.js";
 import { createSessionGroupSchema } from "../schemas/initialize-session-group.schema.js";
 import { CreateSessionUseCase } from "@/usecases/sessions/create-session.js";
 import { sessionToResponse } from "@/model/mappers/session-to-response.js";
