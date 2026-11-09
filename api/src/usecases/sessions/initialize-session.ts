@@ -26,7 +26,7 @@ export class InitializeSessionGroupUseCase {
 		responsiblePhoneNumber,
 		groupFirstSession
 	}: InitializeSessionGroupInput): Promise<InitializeSessionGroupOutput> {
-		const { braceletId, sessionType } = groupFirstSession
+		const { ownerName, braceletId, sessionType } = groupFirstSession
 
 		if (sessionType !== "NORMAL") {
 			throw new DomainError("A sessão do responsável do grupo não pode ser do tipo infantil")
@@ -44,7 +44,7 @@ export class InitializeSessionGroupUseCase {
 		await this.sessionsRepository.createSessionGroup(sessionGroup);
 
 		try {
-			const session = await this.createSessionUseCase.handle({ braceletId, sessionType: "NORMAL", sessionGroupId: sessionGroup.id })
+			const session = await this.createSessionUseCase.handle({ ownerName, braceletId, sessionType: "NORMAL", sessionGroupId: sessionGroup.id })
 
 			return {
 				sessionGroup,

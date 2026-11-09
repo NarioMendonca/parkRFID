@@ -10,6 +10,7 @@ export type SessionType = "NORMAL" | "KID";
 
 type SessionProps = {
 	id: string;
+	ownerName: string;
 	group: SessionGroup;
 	braceletId: string;
 	checkinDate: Date;
@@ -21,6 +22,7 @@ type SessionProps = {
 
 type OpenSessionInput = {
 	bracelet: Bracelet;
+	ownerName: string;
 	sessionGroup: SessionGroup;
 	sessionType: SessionType;
 };
@@ -28,9 +30,10 @@ type OpenSessionInput = {
 export class Session {
 	private constructor(private props: SessionProps) {}
 
-	static open({ bracelet, sessionGroup, sessionType }: OpenSessionInput) {
+	static open({ ownerName, bracelet, sessionGroup, sessionType }: OpenSessionInput) {
 		return new Session({
 			id: randomUUID(),
+			ownerName,
 			braceletId: bracelet.uidRfid,
 			checkinDate: new Date(),
 			checkoutDate: null,
@@ -47,6 +50,10 @@ export class Session {
 
 	get id() {
 		return this.props.id;
+	}
+
+	get ownerName() {
+		return this.props.ownerName
 	}
 
 	get group() {

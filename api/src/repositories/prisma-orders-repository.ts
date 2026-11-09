@@ -18,8 +18,9 @@ export class PrismaOrdersRepository {
 				data: {
 					id: order.id,
 					sessionId: order.sessionId,
+					sessionGroupId: session.group.id,
 					createdAt: order.createdAt,
-					createdBy: order.createdBy,
+					createdFor: order.createdFor,
 					tableNumber: order.tableNumber,
 					orderItem: {
 						createMany: {

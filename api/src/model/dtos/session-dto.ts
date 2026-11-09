@@ -2,6 +2,7 @@ import type { Decimal } from "decimal.js";
 
 export type SessionDTO = {
 	id: string;
+	ownerName: string;
 	braceletId: string;
 	checkoutDate: Date | null;
 	checkinDate: Date;

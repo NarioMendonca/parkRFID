@@ -46,6 +46,7 @@ enum SessionRole {
 model Sessions {
   id             String      @id @default(uuid())
   braceletId     String
+  ownerName      String
   checkoutDate   DateTime?
   checkinDate    DateTime    @default(now())
   status         Status      @default(OPEN)
@@ -80,9 +81,9 @@ enum SessionType {
 model Orders {
   id             String      @id @default(uuid())
   createdAt      DateTime    @default(now())
-  sessionId      String?
-  sessionGroupId String?
-  createdBy      SessionType
+  sessionId      String
+  sessionGroupId String
+  createdFor     SessionType
   tableNumber    String?
 
   session      Sessions?      @relation(fields: [sessionId], references: [id])

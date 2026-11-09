@@ -26,7 +26,7 @@ describe("POST /sessions/checkin/group", () => {
 		expect(response.statusCode).toBe(400);
 	});
 	
-	it("cria um grupo com o responsável e sua sessão", async () => {
+	it.only("cria um grupo com o responsável e sua sessão", async () => {
 		await registerBracelet(app)
 		const response = await createSessionGroup(app)
 

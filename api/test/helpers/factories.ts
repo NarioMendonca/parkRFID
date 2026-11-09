@@ -39,6 +39,7 @@ export async function createSessionGroup(app: FastifyInstance, uidRfid: string =
 			responsibleCpf,
 			responsiblePhoneNumber: "11999999999",
 			groupFirstSession: {
+				ownerName: "José Rogerio da Silva",
 				braceletId: uidRfid,
 				sessionType: "NORMAL"
 			}
@@ -53,6 +54,7 @@ export async function createSession(app: FastifyInstance, groupId: string, uidRf
 		method: "POST",
 		url: "/sessions/checkin",
 		payload: {
+			ownerName: "José Rogerio da Silva",
 			braceletId: uidRfid,
 			sessionGroupId: groupId,
 			sessionType: "NORMAL"

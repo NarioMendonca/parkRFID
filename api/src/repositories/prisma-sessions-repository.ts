@@ -97,6 +97,7 @@ export class PrismaSessionsRepository {
 		await prisma.sessions.create({
 			data: {
 				id: session.id,
+				ownerName: session.ownerName,
 				braceletId: session.braceletId,
 				checkinDate: session.checkinDate,
 				checkoutDate: session.checkoutDate,
