@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:rfidparque/core/theme/app_theme.dart';
+import 'package:rfidparque/core/widgets/step_fade.dart';
 import 'package:rfidparque/features/bracelets/presentation/screens/tela_gestao_pulseiras.dart';
 import 'package:rfidparque/features/menu/presentation/screens/tela_menu.dart';
 import '../../../orders/presentation/screens/tela_fazer_pedido_inicio.dart';
@@ -103,7 +104,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       },
       appBar: _showAppBar
           ? AppBar(
-        toolbarHeight: 80,
+        toolbarHeight: 64,
         centerTitle: false,
         leading: Builder(builder: (context) {
           return IconButton(
@@ -214,7 +215,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
+                  StepFadeRoute(
                     builder: (context) => const TelaFazerPedidoInicio(),
                   ),
                 );

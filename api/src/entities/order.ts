@@ -24,6 +24,7 @@ type OrderProps = {
 	items: OrderLine[];
 	balance: Decimal;
 	createdBy: OrderCreatedBy;
+	tableNumber: string | null;
 };
 
 type PlaceOrderInput = {
@@ -31,12 +32,19 @@ type PlaceOrderInput = {
 	items: OrderItem[];
 	menuItems: MenuItem[];
 	createdBy: OrderCreatedBy;
+	tableNumber?: string;
 };
 
 export class Order {
 	private constructor(private props: OrderProps) {}
 
-	static place({ session, items, menuItems, createdBy }: PlaceOrderInput) {
+	static place({
+		session,
+		items,
+		menuItems,
+		createdBy,
+		tableNumber,
+	}: PlaceOrderInput) {
 		const menuItemsById = new Map(
 			menuItems.map((menuItem) => [menuItem.id, menuItem]),
 		);
@@ -68,7 +76,8 @@ export class Order {
 			createdAt: new Date(),
 			items: lines,
 			balance: orderTotalBalance,
-			createdBy
+			createdBy,
+			tableNumber: tableNumber ?? null,
 		});
 	}
 
@@ -94,5 +103,9 @@ export class Order {
 
 	get createdBy() {
 		return this.props.createdBy
+	}
+
+	get tableNumber() {
+		return this.props.tableNumber;
 	}
 }

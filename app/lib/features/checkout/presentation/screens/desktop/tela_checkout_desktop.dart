@@ -643,7 +643,7 @@ class _BraceletComanda extends StatelessWidget {
           ),
           title: Row(
             children: [
-              Text(b.isKid ? 'Kid' : 'Normal', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+              Text(b.isKid ? 'Infantil' : 'Adulto', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
               if (b.isLeader) ...[
                 const SizedBox(width: 8),
                 const StatusPill(label: 'Líder', tone: AppTone.accent),
@@ -753,7 +753,7 @@ class _PaymentPanel extends StatelessWidget {
                             c.toggleBracelet(b.braceletId);
                           },
                     title: Text(
-                      '${b.isKid ? 'Kid' : 'Normal'}${b.isLeader ? ' · líder' : ''}',
+                      '${b.isKid ? 'Infantil' : 'Adulto'}${b.isLeader ? ' · líder' : ''}',
                       style: const TextStyle(fontWeight: FontWeight.w700),
                     ),
                     subtitle: Text(b.braceletId, style: const TextStyle(fontFamily: 'monospace', fontSize: 12)),

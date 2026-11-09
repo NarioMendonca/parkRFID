@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../../core/utils/formatters.dart';
 import '../../data/models/menu_item_model.dart';
 import '../../data/repositories/menu_repository.dart';
 
@@ -24,6 +25,21 @@ class CardapioController extends ChangeNotifier {
 
   String _selectedCategory = todas;
   String get selectedCategory => _selectedCategory;
+
+  String _busca = '';
+  bool get temBusca => _busca.isNotEmpty;
+
+  List<MenuItemModel> get itensVisiveis {
+    if (_busca.isEmpty) return items;
+    return _items.where((item) => normalizarBusca(item.name).contains(_busca)).toList();
+  }
+
+  void buscar(String texto) {
+    final normalizado = normalizarBusca(texto);
+    if (normalizado == _busca) return;
+    _busca = normalizado;
+    _notify();
+  }
 
 
   Future<void> load() async {

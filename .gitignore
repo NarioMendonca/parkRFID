@@ -1,2 +1,5 @@
 .env
 *.db
+.idea/workspace.xml
+.idea/caches/
+.idea/deviceManager.xml

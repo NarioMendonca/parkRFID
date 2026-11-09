@@ -1,11 +1,13 @@
 import { InvalidResourceError } from "@/errors/InvalidResourceError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
+import { getPrinterConfig } from "@/lib/printer.js";
 import { PrismaBraceletsRepository } from "@/repositories/prisma-bracelets-repository.js";
 import { PrismaMenuItemsRepository } from "@/repositories/prisma-menu-items-repository.js";
 import { PrismaOrdersRepository } from "@/repositories/prisma-orders-repository.js";
 
 type CreateOrderInput = {
 	braceletId: string;
+	tableNumber?: string;
 	items: {
 		menuItemId: string;
 		amount: number;
@@ -17,7 +19,7 @@ export class CreateOrderUseCase {
 	private ordersRepository = new PrismaOrdersRepository();
 	private menuItemsRepository = new PrismaMenuItemsRepository();
 
-	async handle({ braceletId, items }: CreateOrderInput) {
+	async handle({ braceletId, tableNumber, items }: CreateOrderInput) {
 		const bracelet = await this.braceletsRepository.findByUidRfid(braceletId);
 		if (!bracelet) {
 			throw new NotFoundError("Pulseira não cadastrada");
@@ -32,9 +34,11 @@ export class CreateOrderUseCase {
 		const itemsIds = items.map((item) => item.menuItemId);
 		const menuItems = await this.menuItemsRepository.fetchItemsById(itemsIds);
 
-		const order = bracelet.placeOrder(items, menuItems);
+		const order = bracelet.placeOrder(items, menuItems, tableNumber);
 
-		await this.ordersRepository.createOrder(order, bracelet.activeSession);
+		await this.ordersRepository.createOrder(order, bracelet.activeSession, {
+			enqueuePrint: getPrinterConfig() !== null,
+		});
 
 		return order;
 	}

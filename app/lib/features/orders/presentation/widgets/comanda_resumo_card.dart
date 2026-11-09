@@ -59,7 +59,7 @@ class ComandaResumoCard extends StatelessWidget {
           InfoRow(
             icon: Icons.badge_outlined,
             label: 'Tipo',
-            value: c.isKid ? 'Infantil / Kid' : 'Adulto / Normal',
+            value: c.isKid ? 'Infantil' : 'Adulto',
           ),
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 12),

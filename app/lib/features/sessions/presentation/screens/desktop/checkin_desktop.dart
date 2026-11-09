@@ -462,7 +462,7 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          '#${index + 1} · ${isKid ? 'Kid / Infantil' : 'Normal / Adulto'}',
+                                          '#${index + 1} · ${isKid ? 'Infantil' : 'Adulto'}',
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 16,
@@ -743,7 +743,7 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
                       children: const [
                         Icon(Icons.person, size: 38, color: AppTheme.primary),
                         SizedBox(height: 20),
-                        Text('Normal / Adulto', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                        Text('Adulto', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                         SizedBox(height: 6),
                         Text('Acesso completo às atrações', style: TextStyle(color: AppTheme.textMuted, fontSize: 14)),
                       ],
@@ -770,7 +770,7 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
                       children: const [
                         Icon(Icons.child_care, size: 38, color: AppTheme.primary),
                         SizedBox(height: 20),
-                        Text('Kid / Infantil', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                        Text('Infantil', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                         SizedBox(height: 6),
                         Text('Atrações e áreas infantis', style: TextStyle(color: AppTheme.textMuted, fontSize: 14)),
                       ],
@@ -850,7 +850,7 @@ class _TelaCheckinDesktopState extends State<TelaCheckinDesktop> {
                 const SizedBox(height: 14),
                 _InfoRow(icon: Icons.phone_outlined, label: 'Telefone', value: _phoneController.text),
                 const SizedBox(height: 14),
-                _InfoRow(icon: Icons.nfc, label: 'Pulseiras', value: '${_bands.length} ($adults adulto · $kids kid)'),
+                _InfoRow(icon: Icons.nfc, label: 'Pulseiras', value: '${_bands.length} ($adults adulto · $kids infantil)'),
               ],
             ),
           ),

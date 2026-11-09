@@ -60,7 +60,11 @@ export class Bracelet {
 		return session;
 	}
 
-	placeOrder(items: OrderItem[], menuItems: MenuItem[]) {
+	placeOrder(
+		items: OrderItem[],
+		menuItems: MenuItem[],
+		tableNumber?: string,
+	) {
 		if (!this.props.activeSession) {
 			throw new NotFoundError(
 				"Nenhuma sessão ativa foi encontrada nessa pulseira",
@@ -72,6 +76,7 @@ export class Bracelet {
 			items,
 			menuItems,
 			createdBy: "SESSION",
+			tableNumber,
 		});
 
 		this.props.activeSession.addValueToBalance(order.balance);

@@ -3,6 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/api/api_client.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/formatters.dart';
+import '../../../menu/presentation/controllers/cardapio_controller.dart';
+import '../../../menu/presentation/widgets/category_chip.dart';
+import '../../../menu/presentation/widgets/menu_search_field.dart';
 import '../controllers/pedido_provider.dart';
 import '../../../../core/config/feature_flags.dart';
 import 'tela_atribuir_mesa.dart';
@@ -20,9 +24,21 @@ class _TelaSelecaoProdutosState extends State<TelaSelecaoProdutos> {
   List<dynamic> _produtosMenu = [];
   String? _erro;
 
+  static const List<String> _categorias = CardapioController.categorias;
+  String _categoriaSelecionada = CardapioController.todas;
+  String _busca = '';
 
-  final List<String> _categorias = ['Bebidas', 'Porções', 'Lanches', 'Sobremesas'];
-  String _categoriaSelecionada = 'Bebidas';
+
+  List<dynamic> get _produtosFiltrados {
+    final categoria = normalizarBusca(_categoriaSelecionada);
+    return _produtosMenu.where((produto) {
+      final daCategoria = _categoriaSelecionada == CardapioController.todas ||
+          normalizarBusca('${produto['category'] ?? ''}') == categoria;
+      final batComBusca = _busca.isEmpty ||
+          normalizarBusca('${produto['name'] ?? ''}').contains(_busca);
+      return daCategoria && batComBusca;
+    }).toList();
+  }
 
   @override
   void initState() {
@@ -64,6 +80,12 @@ class _TelaSelecaoProdutosState extends State<TelaSelecaoProdutos> {
         child: Column(
           children: [
             _buildHeader(pedidoProvider),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+              child: MenuSearchField(
+                onChanged: (texto) => setState(() => _busca = normalizarBusca(texto)),
+              ),
+            ),
             _buildCategorias(),
             Expanded(
               child: _carregando
@@ -147,7 +169,7 @@ class _TelaSelecaoProdutosState extends State<TelaSelecaoProdutos> {
             },
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 4),
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: isSelected ? AppTheme.primary : Colors.transparent,
@@ -156,12 +178,23 @@ class _TelaSelecaoProdutosState extends State<TelaSelecaoProdutos> {
                     ? null
                     : Border.all(color: Colors.grey.shade300),
               ),
-              child: Text(
-                _categorias[index],
-                style: TextStyle(
-                  color: isSelected ? Colors.white : const Color(0xFF64748B),
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    iconForMenuCategory(_categorias[index]),
+                    size: 18,
+                    color: isSelected ? Colors.white : const Color(0xFF64748B),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    _categorias[index],
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : const Color(0xFF64748B),
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ),
           );
@@ -171,11 +204,34 @@ class _TelaSelecaoProdutosState extends State<TelaSelecaoProdutos> {
   }
 
   Widget _buildListaProdutos(PedidoProvider pedidoProvider) {
+    final produtos = _produtosFiltrados;
+    if (produtos.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.search_off_rounded, size: 48, color: Color(0xFF94A3B8)),
+              const SizedBox(height: 12),
+              Text(
+                _busca.isNotEmpty
+                    ? 'Nenhum item com esse nome nesta categoria.'
+                    : 'Nenhum item disponível nesta categoria.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return ListView.builder(
-      padding: const EdgeInsets.all(20),
-      itemCount: _produtosMenu.length,
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+      itemCount: produtos.length,
       itemBuilder: (context, index) {
-        final produto = _produtosMenu[index];
+        final produto = produtos[index];
         final double preco = double.tryParse(produto['price'].toString()) ?? 0.0;
         final String nome = produto['name'];
         final String primeiraLetra = nome.isNotEmpty ? nome[0].toUpperCase() : '-';
@@ -376,7 +432,6 @@ class _TelaSelecaoProdutosState extends State<TelaSelecaoProdutos> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  // Sem mesa/impressão na API, vai direto para a revisão.
                   builder: (context) => FeatureFlags.mesaEImpressao
                       ? const TelaAtribuirMesa()
                       : const TelaRevisarPedido(),

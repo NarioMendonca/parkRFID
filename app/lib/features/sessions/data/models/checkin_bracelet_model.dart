@@ -1,7 +1,7 @@
 /// Tipo da sessão da pulseira, com o valor que a API espera em `sessionType`.
 enum SessionType {
-  normal('NORMAL', 'Adulto / Normal'),
-  kid('KID', 'Infantil / Kid');
+  normal('NORMAL', 'Adulto'),
+  kid('KID', 'Infantil');
 
   const SessionType(this.apiValue, this.label);
 

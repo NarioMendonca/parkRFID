@@ -12,6 +12,7 @@ import '../widgets/category_chip.dart';
 import '../widgets/menu_dialogs.dart';
 import '../widgets/menu_item_card.dart';
 import '../widgets/menu_item_form_dialog.dart';
+import '../widgets/menu_search_field.dart';
 
 
 class TelaMenu extends StatelessWidget {
@@ -63,9 +64,7 @@ class _TelaMenuContent extends StatelessWidget {
     if (erro != null && context.mounted) mostrarAvisoCardapio(context, erro);
   }
 
-  // ---------------------------------------------------------------------------
-  // UI
-  // ---------------------------------------------------------------------------
+
   @override
   Widget build(BuildContext context) {
     final c = context.watch<CardapioController>();
@@ -79,28 +78,38 @@ class _TelaMenuContent extends StatelessWidget {
           children: [
             WaveBand(
               subtitle: 'Itens disponíveis para os garçons.',
-              child: SizedBox(
-                height: 46,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: CardapioController.categorias.length,
-                  itemBuilder: (context, index) {
-                    final cat = CardapioController.categorias[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: CategoryChip(
-                        label: cat,
-                        icon: iconForMenuCategory(cat),
-                        selected: c.selectedCategory == cat,
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          c.selectCategory(cat);
-                        },
-                      ),
-                    );
-                  },
-                ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                    child: MenuSearchField(onChanged: c.buscar),
+                  ),
+                  SizedBox(
+                    height: 46,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: CardapioController.categorias.length,
+                      itemBuilder: (context, index) {
+                        final cat = CardapioController.categorias[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: CategoryChip(
+                            label: cat,
+                            icon: iconForMenuCategory(cat),
+                            selected: c.selectedCategory == cat,
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              c.selectCategory(cat);
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 6),
@@ -181,7 +190,21 @@ class _TelaMenuContent extends StatelessWidget {
       );
     }
 
-    final items = c.items;
+    final items = c.itensVisiveis;
+    if (items.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 32),
+          child: StatePanel(
+            icon: Icons.search_off_rounded,
+            tone: AppTone.neutral,
+            title: 'Nenhum item encontrado.',
+            message: 'Nenhum item desta categoria tem esse nome.',
+          ),
+        ),
+      );
+    }
+
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(16, 2, 16, 100),
       itemCount: items.length,

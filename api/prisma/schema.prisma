@@ -83,10 +83,33 @@ model Orders {
   sessionId      String?
   sessionGroupId String?
   createdBy      SessionType
+  tableNumber    String?
 
   session      Sessions?      @relation(fields: [sessionId], references: [id])
   sessionGroup SessionsGroup? @relation(fields: [sessionGroupId], references: [id])
   orderItem    OrderItems[]
+  printJob     PrintJobs[]
+}
+
+enum PrintStatus {
+  PENDING
+  PRINTING
+  PRINTED
+  FAILED
+}
+
+// Queue of tickets to print, one job per order, handled oldest first
+model PrintJobs {
+  id            String      @id @default(uuid())
+  orderId       String
+  status        PrintStatus @default(PENDING)
+  attempts      Int         @default(0)
+  lastError     String?
+  createdAt     DateTime    @default(now())
+  nextAttemptAt DateTime    @default(now())
+  printedAt     DateTime?
+
+  order Orders @relation(fields: [orderId], references: [id])
 }
 
 model OrderItems {

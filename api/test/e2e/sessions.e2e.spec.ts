@@ -402,6 +402,7 @@ describe("GET /sessions/:sessionId/history", () => {
 				type: "ORDER",
 				date: expect.any(String),
 				orderId: expect.any(String),
+				tableNumber: null,
 				total: "21.00",
 				items: [
 					{

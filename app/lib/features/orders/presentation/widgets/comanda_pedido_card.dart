@@ -14,6 +14,12 @@ class ComandaPedidoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hora = formatarHora(pedido.date);
+    final mesa = pedido.tableNumber;
+    final titulo = [
+      'Pedido $numero',
+      if (hora.isNotEmpty) hora,
+      if (mesa != null && mesa.isNotEmpty) 'Mesa ${mesa.padLeft(2, '0')}',
+    ].join(' · ');
 
     return AppCard(
       margin: const EdgeInsets.only(bottom: 12),
@@ -28,7 +34,7 @@ class ComandaPedidoCard extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  hora.isEmpty ? 'Pedido $numero' : 'Pedido $numero · $hora',
+                  titulo,
                   style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800, color: AppTheme.textMuted),
                 ),
               ),

@@ -66,10 +66,11 @@ class CheckoutOrder {
 
   double get total => items.fold(0, (sum, i) => sum + i.subtotal);
 
-  /// Evento `{ type: "ORDER", date, orderId, total, items }` do histórico.
+  /// Evento `{ type: "ORDER", date, orderId, tableNumber, total, items }` do histórico.
   factory CheckoutOrder.fromHistoryEvent(Map<String, dynamic> json) {
     return CheckoutOrder(
       id: json['orderId'] ?? '',
+      tableNumber: json['tableNumber']?.toString(),
       date: DateTime.tryParse(json['date'].toString()) ?? DateTime.now(),
       items: ((json['items'] as List?) ?? [])
           .map((e) => CheckoutOrderItem.fromJson(Map<String, dynamic>.from(e)))

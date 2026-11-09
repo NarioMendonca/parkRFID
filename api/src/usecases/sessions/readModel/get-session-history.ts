@@ -8,6 +8,7 @@ export type SessionEvent =
 			type: "ORDER";
 			date: Date;
 			orderId: string;
+			tableNumber: string | null;
 			total: string;
 			items: {
 				menuItemId: string;
@@ -61,6 +62,7 @@ export async function getSessionHistory(sessionId: string) {
 			type: "ORDER",
 			date: order.createdAt,
 			orderId: order.id,
+			tableNumber: order.tableNumber,
 			total: total.toFixed(2),
 			items: items.map((item) => ({
 				...item,

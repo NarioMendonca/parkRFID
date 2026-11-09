@@ -56,11 +56,8 @@ class _TelaRevisarPedidoState extends State<TelaRevisarPedido> {
         if (!mounted) return;
 
         Navigator.of(context).pushAndRemoveUntil(
-          PageRouteBuilder(
-            transitionDuration: const Duration(milliseconds: 250),
-            pageBuilder: (_, _, _) => TelaPedidoConcluido(pedido: concluido),
-            transitionsBuilder: (_, animation, _, child) =>
-                FadeTransition(opacity: animation, child: child),
+          MaterialPageRoute(
+            builder: (_) => TelaPedidoConcluido(pedido: concluido),
           ),
           (route) => route.isFirst,
         );

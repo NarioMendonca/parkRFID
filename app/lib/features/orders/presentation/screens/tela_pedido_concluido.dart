@@ -18,7 +18,7 @@ class TelaPedidoConcluido extends StatefulWidget {
 }
 
 class _TelaPedidoConcluidoState extends State<TelaPedidoConcluido> with SingleTickerProviderStateMixin {
-  // Conteúdo entra em sequência depois que o ✓ termina.
+
   late final AnimationController _conteudo = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 700),
@@ -36,7 +36,7 @@ class _TelaPedidoConcluidoState extends State<TelaPedidoConcluido> with SingleTi
   @override
   void initState() {
     super.initState();
-    // Começa um pouco antes do fim do check, para a tela não parecer parada.
+
     Future.delayed(const Duration(milliseconds: 950), () {
       if (mounted) _conteudo.forward();
     });

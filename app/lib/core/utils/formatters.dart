@@ -1,3 +1,14 @@
+String normalizarBusca(String texto) {
+  const comAcento = 'áàâãäéèêëíìîïóòôõöúùûüçñ';
+  const semAcento = 'aaaaaeeeeiiiiooooouuuucn';
+  final buffer = StringBuffer();
+  for (final char in texto.toLowerCase().trim().split('')) {
+    final i = comAcento.indexOf(char);
+    buffer.write(i >= 0 ? semAcento[i] : char);
+  }
+  return buffer.toString();
+}
+
 /// Ex.: 12.5 → "R$ 12,50".
 String formatarMoeda(double valor) => 'R\$ ${valor.toStringAsFixed(2).replaceAll('.', ',')}';
 

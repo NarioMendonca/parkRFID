@@ -7,6 +7,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_ui.dart';
 import '../../../../core/utils/nfc_off_screen.dart';
 import '../../../../core/widgets/nfc_radar_pulse.dart';
+import '../../../../core/widgets/step_fade.dart';
 import '../controllers/pedido_provider.dart';
 import 'tela_selecao_produtos.dart';
 
@@ -175,9 +176,9 @@ class _TelaFazerPedidoInicioState extends State<TelaFazerPedidoInicio> {
             _voltarParaMenu();
           }
         },
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
-          child: _buildCurrentStep(),
+        child: StepFade(
+          background: _step == 1 || _step == 4 ? AppTheme.navy : null,
+          child: KeyedSubtree(key: ValueKey(_step), child: _buildCurrentStep()),
         ),
       ),
     );
@@ -189,8 +190,9 @@ class _TelaFazerPedidoInicioState extends State<TelaFazerPedidoInicio> {
         return _buildTelaLeitura();
       case 2:
         return _buildTelaResultado();
+      case 4:
+        return TelaConsultarComanda(onSair: _voltarParaMenu);
       case 3:
-
         return TelaNfcDesativado(
           key: const ValueKey('nfc_desativado'),
           onVoltar: _voltarParaMenu,
@@ -249,13 +251,7 @@ class _TelaFazerPedidoInicioState extends State<TelaFazerPedidoInicio> {
                         filled: false,
                         onTap: () {
                           HapticFeedback.lightImpact();
-
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const TelaConsultarComanda(),
-                            ),
-                          );
+                          setState(() => _step = 4);
                         },
                       ),
                     ),

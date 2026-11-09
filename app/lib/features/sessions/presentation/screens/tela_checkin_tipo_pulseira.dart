@@ -75,35 +75,37 @@ class TelaCheckinTipoPulseira extends StatelessWidget {
                 const SizedBox(height: 28),
                 const SectionLabel('Registrar esta pulseira como'),
                 const SizedBox(height: 12),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(
-                      child: TipoPulseiraOption(
-                        title: 'Normal',
-                        subtitle: 'Adulto',
-                        icon: Icons.person_rounded,
-                        selected: tipoSelecionado == SessionType.normal,
-                        onTap: () {
-                          HapticFeedback.selectionClick();
-                          onSelecionarTipo(SessionType.normal);
-                        },
+                IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        child: TipoPulseiraOption(
+                          title: 'Adulto',
+                          subtitle: 'Acesso completo às atrações',
+                          icon: Icons.person_rounded,
+                          selected: tipoSelecionado == SessionType.normal,
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            onSelecionarTipo(SessionType.normal);
+                          },
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: TipoPulseiraOption(
-                        title: 'Kid',
-                        subtitle: 'Infantil',
-                        icon: Icons.child_care_rounded,
-                        selected: tipoSelecionado == SessionType.kid,
-                        onTap: () {
-                          HapticFeedback.selectionClick();
-                          onSelecionarTipo(SessionType.kid);
-                        },
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TipoPulseiraOption(
+                          title: 'Infantil',
+                          subtitle: 'Atrações e áreas infantis',
+                          icon: Icons.child_care_rounded,
+                          selected: tipoSelecionado == SessionType.kid,
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            onSelecionarTipo(SessionType.kid);
+                          },
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),

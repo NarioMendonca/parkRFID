@@ -54,11 +54,15 @@ class ComandaPedidoModel {
   final double total;
   final List<ComandaItemModel> items;
 
+  /// Mesa informada no pedido (null quando foi feito sem mesa).
+  final String? tableNumber;
+
   const ComandaPedidoModel({
     required this.id,
     required this.date,
     required this.total,
     required this.items,
+    this.tableNumber,
   });
 
   factory ComandaPedidoModel.fromJson(Map<String, dynamic> json) {
@@ -75,6 +79,7 @@ class ComandaPedidoModel {
       date: _toDate(json['date']),
       total: total > 0 ? total : items.fold<double>(0, (s, i) => s + i.subtotal),
       items: items,
+      tableNumber: json['tableNumber']?.toString(),
     );
   }
 }

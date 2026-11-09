@@ -122,6 +122,7 @@ class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
+      splashFactory: NoSplash.splashFactory,
       fontFamily: 'Nunito',
       scaffoldBackgroundColor: background,
       primaryColor: primary,

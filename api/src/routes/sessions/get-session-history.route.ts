@@ -11,6 +11,7 @@ const SessionEventSchema = z.discriminatedUnion("type", [
 		type: z.literal("ORDER"),
 		date: z.date(),
 		orderId: z.string(),
+		tableNumber: z.string().nullable(),
 		total: z.string(),
 		items: z.array(
 			z.object({

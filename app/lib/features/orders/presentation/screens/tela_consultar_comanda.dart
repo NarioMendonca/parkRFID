@@ -6,6 +6,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/nfc_off_screen.dart';
 import '../../../../core/widgets/app_ui.dart';
 import '../../../../core/widgets/nfc_radar_pulse.dart';
+import '../../../../core/widgets/step_fade.dart';
 import '../../../../core/widgets/skeleton.dart';
 import '../../data/models/comanda_model.dart';
 import '../../data/services/comanda_service.dart';
@@ -15,19 +16,23 @@ import '../widgets/comanda_pedido_card.dart';
 import '../widgets/comanda_resumo_card.dart';
 
 class TelaConsultarComanda extends StatelessWidget {
-  const TelaConsultarComanda({super.key});
+  const TelaConsultarComanda({super.key, this.onSair});
+
+  final VoidCallback? onSair;
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => ConsultarComandaController(ComandaService()),
-      child: const _TelaConsultarComandaContent(),
+      child: _TelaConsultarComandaContent(onSair: onSair),
     );
   }
 }
 
 class _TelaConsultarComandaContent extends StatefulWidget {
-  const _TelaConsultarComandaContent();
+  const _TelaConsultarComandaContent({this.onSair});
+
+  final VoidCallback? onSair;
 
   @override
   State<_TelaConsultarComandaContent> createState() => _TelaConsultarComandaContentState();
@@ -41,9 +46,22 @@ class _TelaConsultarComandaContentState extends State<_TelaConsultarComandaConte
   void initState() {
     super.initState();
     _controller.addListener(_onEtapaTalvezMudou);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) => _iniciarLeituraAposAbrir());
+  }
+
+  void _iniciarLeituraAposAbrir() {
+    if (!mounted) return;
+    final animacao = ModalRoute.of(context)?.animation;
+    if (animacao == null || animacao.isCompleted) {
+      _iniciarLeitura();
+      return;
+    }
+    void aoTerminar(AnimationStatus status) {
+      if (status != AnimationStatus.completed) return;
+      animacao.removeStatusListener(aoTerminar);
       if (mounted) _iniciarLeitura();
-    });
+    }
+    animacao.addStatusListener(aoTerminar);
   }
 
   @override
@@ -63,6 +81,11 @@ class _TelaConsultarComandaContentState extends State<_TelaConsultarComandaConte
 
   void _sair() {
     _controller.stopNfc();
+    final onSair = widget.onSair;
+    if (onSair != null) {
+      onSair();
+      return;
+    }
     Navigator.of(context).maybePop();
   }
 
@@ -113,8 +136,8 @@ class _TelaConsultarComandaContentState extends State<_TelaConsultarComandaConte
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) _controller.stopNfc();
       },
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 180),
+      child: StepFade(
+        background: c.step == ConsultaComandaStep.leitura ? AppTheme.navy : AppTheme.background,
         child: KeyedSubtree(
           key: ValueKey(c.step),
           child: switch (c.step) {

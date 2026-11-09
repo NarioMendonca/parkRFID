@@ -5,8 +5,14 @@ import { prisma } from "@/lib/prisma.js";
 
 export class PrismaOrdersRepository {
 	// The order and the session total are saved together, so an order is never
-	// recorded without being charged to the session (or the other way around)
-	async createOrder(order: Order, session: Session) {
+	// recorded without being charged to the session (or the other way around).
+	// When printing is on, the print job goes in the same transaction, so an
+	// order is never saved without its ticket being queued.
+	async createOrder(
+		order: Order,
+		session: Session,
+		options: { enqueuePrint?: boolean } = {},
+	) {
 		await prisma.$transaction([
 			prisma.orders.create({
 				data: {
@@ -14,11 +20,13 @@ export class PrismaOrdersRepository {
 					sessionId: order.sessionId,
 					createdAt: order.createdAt,
 					createdBy: order.createdBy,
+					tableNumber: order.tableNumber,
 					orderItem: {
 						createMany: {
 							data: order.items,
 						},
 					},
+					...(options.enqueuePrint ? { printJob: { create: {} } } : {}),
 				},
 			}),
 			prisma.sessions.update({

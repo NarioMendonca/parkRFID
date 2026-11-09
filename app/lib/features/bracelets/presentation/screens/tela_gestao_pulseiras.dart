@@ -5,6 +5,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_ui.dart';
 import '../../../../core/utils/nfc_off_screen.dart';
 import '../../../../core/widgets/nfc_radar_pulse.dart';
+import '../../../../core/widgets/step_fade.dart';
 import '../controllers/bracelets_controller.dart';
 
 
@@ -165,9 +166,9 @@ class _TelaGestaoPulseirasContentState extends State<_TelaGestaoPulseirasContent
             _resetFlow();
           }
         },
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
-          child: _buildCurrentStep(),
+        child: StepFade(
+          background: _step == 2 ? AppTheme.navy : null,
+          child: KeyedSubtree(key: ValueKey(_step), child: _buildCurrentStep()),
         ),
       ),
     );
