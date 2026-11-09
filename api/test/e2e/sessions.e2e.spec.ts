@@ -26,7 +26,7 @@ describe("POST /sessions/checkin/group", () => {
 		expect(response.statusCode).toBe(400);
 	});
 	
-	it.only("cria um grupo com o responsável e sua sessão", async () => {
+	it("cria um grupo com o responsável e sua sessão", async () => {
 		await registerBracelet(app)
 		const response = await createSessionGroup(app)
 
@@ -96,6 +96,7 @@ describe("POST /sessions/checkin/group", () => {
 				responsibleCpf: "12345678901",
 				responsiblePhoneNumber: "11999999999",
 				groupFirstSession: {
+					ownerName: "Rogerio Tech da Silva",
 					braceletId: BRACELET_UID,
 					sessionType: "KID"
 				}
@@ -120,6 +121,7 @@ describe("POST /sessions/checkin", () => {
 			method: "POST",
 			url: "/sessions/checkin",
 			payload: {
+				ownerName: "Rogerio Tech da Silva",
 				braceletId: newBraceletId,
 				sessionGroupId: createdGroup.sessionGroup.id,
 			},
@@ -127,6 +129,7 @@ describe("POST /sessions/checkin", () => {
 
 		expect(response.statusCode).toBe(200);
 		expect(response.json().session).toMatchObject({
+			ownerName: "Rogerio Tech da Silva",
 			braceletId: newBraceletId,
 			status: "OPEN",
 			total: "0",
@@ -146,6 +149,7 @@ describe("POST /sessions/checkin", () => {
 			method: "POST",
 			url: "/sessions/checkin",
 			payload: {
+				ownerName: "Rogerio Tech da Silva",
 				braceletId: kidBracelet,
 				sessionGroupId: groupId,
 				sessionType: "KID",
@@ -169,6 +173,7 @@ describe("POST /sessions/checkin", () => {
 			method: "POST",
 			url: "/sessions/checkin",
 			payload: {
+				ownerName: "Rogerio Tech da Silva",
 				braceletId: BRACELET_UID,
 				sessionGroupId: "grupo-inexistente",
 			},
@@ -185,6 +190,7 @@ describe("POST /sessions/checkin", () => {
 			method: "POST",
 			url: "/sessions/checkin",
 			payload: {
+				ownerName: "Rogerio Tech da Silva",
 				braceletId: BRACELET_UID,
 				sessionGroupId: groupId,
 			},
