@@ -8,10 +8,10 @@ export type SessionDTO = {
 	checkinDate: Date;
 	status: Status;
 	total: Decimal;
-	sessionType: SessionType;
+	sessionType: SessionRole;
 	sessionGroupId: string;
 };
 
 export type Status = "OPEN" | "CLOSED";
 
-export type SessionType = "NORMAL" | "KID";
+export type SessionRole = "NORMAL" | "KID";

@@ -38,6 +38,14 @@ export class PrismaOrdersRepository {
 					total: session.total,
 				},
 			}),
+			prisma.sessionsGroup.update({
+				where: {
+					id: session.group.id,
+				},
+				data: {
+					balance: session.group.balance
+				}
+			})
 		]);
 	}
 

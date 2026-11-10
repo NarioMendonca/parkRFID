@@ -5,6 +5,7 @@ import {
 	BRACELET_UID,
 	checkin,
 	createMenuItem,
+	placeOrder,
 	registerBracelet,
 } from "../helpers/factories.js";
 
@@ -47,33 +48,6 @@ describe("POST /orders", () => {
 		});
 
 		expect(response.statusCode).toBe(200);
-	});
-
-	it("soma o valor do pedido no total da sessão", async () => {
-		await checkin(app);
-		const pipoca = await createMenuItem(app, {
-			name: "Pipoca",
-			price: "10.50",
-		});
-		const suco = await createMenuItem(app, { name: "Suco", price: "5" });
-
-		await app.inject({
-			method: "POST",
-			url: "/orders",
-			payload: {
-				braceletId: BRACELET_UID,
-				items: [
-					{ menuItemId: pipoca.id, amount: 2 },
-					{ menuItemId: suco.id, amount: 1 },
-				],
-			},
-		});
-
-		const session = await prisma.sessions.findFirstOrThrow({
-			where: { braceletId: BRACELET_UID, status: "OPEN" },
-		});
-
-		expect(session.total.toString()).toBe("26");
 	});
 
 	it("não cria pedido para pulseira não cadastrada", async () => {
@@ -187,4 +161,108 @@ describe("POST /orders", () => {
 		expect(response.statusCode).toBe(404);
 		expect(await prisma.orders.count()).toBe(0);
 	});
+
+	it("Create an order for a session sum the order total on the session balance", async () => {
+		await checkin(app);
+		const pipoca = await createMenuItem(app, {
+			name: "Pipoca",
+			price: "10.50",
+		});
+		const suco = await createMenuItem(app, { name: "Suco", price: "5" });
+
+		await app.inject({
+			method: "POST",
+			url: "/orders",
+			payload: {
+				braceletId: BRACELET_UID,
+				items: [
+					{ menuItemId: pipoca.id, amount: 2 },
+					{ menuItemId: suco.id, amount: 1 },
+				],
+			},
+		});
+
+		const session = await prisma.sessions.findFirstOrThrow({
+			where: { braceletId: BRACELET_UID, status: "OPEN" },
+		});
+
+		expect("26").toBe(session.total.toString());
+	});
+
+	it("Create a order for the group", async () => {
+		await checkin(app);
+		const pipoca = await createMenuItem(app, {
+			name: "Pipoca",
+			price: "10.50",
+		});
+		const suco = await createMenuItem(app, { name: "Suco", price: "5" });
+
+		await app.inject({
+			method: "POST",
+			url: "/orders",
+			payload: {
+				braceletId: BRACELET_UID,
+				items: [
+					{ menuItemId: pipoca.id, amount: 2 },
+					{ menuItemId: suco.id, amount: 1 },
+				],
+				createdFor: "SESSION_GROUP"
+			},
+		});
+
+		const sessionGroup = await prisma.sessionsGroup.findFirstOrThrow({
+			where: { 
+				status: "OPEN",
+				session: {
+					some: {
+						braceletId: BRACELET_UID,
+						status: "OPEN"						
+					}
+				} 
+			},
+		});
+
+		expect("26").toBe(sessionGroup.balance.toString());
+	});
+
+	it("Ensure session balance if different of session group balance", async () => {
+		await checkin(app);
+		const pipoca = await createMenuItem(app, {
+			name: "Pipoca",
+			price: "10.50",
+		});
+		const suco = await createMenuItem(app, { name: "Suco", price: "5" });
+
+		await placeOrder(app, BRACELET_UID, [
+			{ menuItemId: pipoca.id, amount: 1 },
+			{ menuItemId: suco.id, amount: 1 },
+		], "SESSION")
+
+		await placeOrder(app, BRACELET_UID, [
+			{ menuItemId: pipoca.id, amount: 2 },
+			{ menuItemId: suco.id, amount: 1 },
+		], "SESSION_GROUP")
+
+		const session = await prisma.sessions.findFirstOrThrow({
+			where: { 
+				status: "OPEN",
+				braceletId: BRACELET_UID
+			}
+		});
+
+		const sessionGroup = await prisma.sessionsGroup.findFirstOrThrow({
+			where: { 
+				status: "OPEN",
+				session: {
+					some: {
+						braceletId: BRACELET_UID,
+						status: "OPEN"						
+					}
+				} 
+			},
+		});
+
+		expect("15.5").toBe(session.total.toString())
+		expect("26").toBe(sessionGroup.balance.toString());
+	})
 });

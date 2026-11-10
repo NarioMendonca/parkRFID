@@ -3,7 +3,7 @@ import { AlreadyExistsError } from "@/errors/AlreadyExistsError.js";
 import { DomainError } from "@/errors/DomainError.js";
 import { NotFoundError } from "@/errors/NotFoundError.js";
 import type { MenuItem } from "./menu-item.js";
-import { Order, type OrderItem } from "./order.js";
+import { Order, OrderCreatedFor, type OrderItem } from "./order.js";
 import { Payment } from "./payment.js";
 import { Session, type SessionType } from "./session.js";
 import type { SessionGroup } from "./session-group.js";
@@ -63,7 +63,8 @@ export class Bracelet {
 	placeOrder(
 		items: OrderItem[],
 		menuItems: MenuItem[],
-		tableNumber?: string,
+		createdFor: OrderCreatedFor,
+		tableNumber?: string
 	) {
 		if (!this.props.activeSession) {
 			throw new NotFoundError(
@@ -75,11 +76,16 @@ export class Bracelet {
 			session: this.props.activeSession,
 			items,
 			menuItems,
-			createdFor: "SESSION",
+			createdFor,
 			tableNumber,
 		});
 
-		this.props.activeSession.addValueToBalance(order.balance);
+		if (createdFor === "SESSION") {
+			this.props.activeSession.addValueToBalance(order.balance);
+		} else {
+			this.props.activeSession.group.addValueToBalance(order.balance);
+		}
+
 
 		return order;
 	}

@@ -1,0 +1,1 @@
+export type SessionType = "SESSION" | "SESSION_GROUP";

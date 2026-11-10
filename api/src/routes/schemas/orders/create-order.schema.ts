@@ -13,6 +13,7 @@ export const CreateOrderSchema = {
 				}),
 			)
 			.min(1),
+		createdFor: z.enum(["SESSION", "SESSION_GROUP"]).default("SESSION")
 	}),
 	response: {
 		200: z.object({

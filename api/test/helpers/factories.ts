@@ -1,3 +1,4 @@
+import { SessionType } from "@/model/dtos/order-dto.js";
 import type { FastifyInstance } from "fastify";
 
 // Test data is created through the API itself, so tests stay at the endpoint level
@@ -92,6 +93,7 @@ export async function placeOrder(
 	app: FastifyInstance,
 	braceletId: string,
 	items: { menuItemId: string; amount: number }[],
+	createdFor: SessionType = "SESSION",
 ) {
-	await post(app, "/orders", { braceletId, items });
+	await post(app, "/orders", { braceletId, items, createdFor });
 }
